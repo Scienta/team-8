@@ -26,6 +26,8 @@ public class ConferenceService {
 
     private static final Logger log = LoggerFactory.getLogger(ConferenceService.class);
 
+    static final int MAX_TALKS_PER_SPEAKER = 3;
+
     private static final Map<String, Integer> DURATIONS = new HashMap<>();
 
     static {
@@ -140,21 +142,24 @@ public class ConferenceService {
                 duration = 45;
         }
 
-        Long id = checkSubmissionLimit(form, duration);
-        if (id == null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "a speaker can submit at most 3 talks");
-        }
+        requireBelowSubmissionLimit(form.speakerId);
+        long id = talkDao.insert(form.title, form.format, duration, form.level, form.speakerId,
+                System.currentTimeMillis());
         Map<String, Object> speaker = speakerDao.findById(form.speakerId);
         notifications.talkSubmitted((String) speaker.get("email"), form.title);
         return getTalk(id);
     }
 
     /**
-     * Checks that the speaker is below the limit of 3 talks.
+     * Refuses with 409 unless the speaker is below the limit of talks. The speaker row stays locked until commit, so
+     * two submissions for the same speaker can't both see room under the limit.
      */
-    private Long checkSubmissionLimit(TalkForm form, int duration) {
-        return talkDao.insertIfBelow(3, form.title, form.format, duration, form.level, form.speakerId,
-                System.currentTimeMillis());
+    private void requireBelowSubmissionLimit(long speakerId) {
+        speakerDao.lockForUpdate(speakerId);
+        if (speakerDao.talkCount(speakerId) >= MAX_TALKS_PER_SPEAKER) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "a speaker can submit at most " + MAX_TALKS_PER_SPEAKER + " talks");
+        }
     }
 
     public TalkDto getTalk(long id) {

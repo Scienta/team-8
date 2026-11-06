@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class TalkDao {
@@ -63,19 +62,12 @@ public class TalkDao {
         return n != null && n > 0;
     }
 
-    /**
-     * Inserts the talk only if the speaker has fewer than {@code max} talks. Returns the new id, or null.
-     * The speaker row is locked first so two submissions for the same speaker can't both see room under the limit.
-     */
-    @Transactional
-    public Long insertIfBelow(int max, String title, String format, int duration, String level, long speakerId, long submittedAt) {
-        jdbc.queryForList("SELECT id FROM speaker WHERE id = ? FOR UPDATE", speakerId);
-        List<Long> ids = jdbc.queryForList(
+    /** Inserts a new {@code SUBMITTED} talk and returns its id. */
+    public long insert(String title, String format, int duration, String level, long speakerId, long submittedAt) {
+        return jdbc.queryForObject(
                 "INSERT INTO talk (title, format, duration, level, status, speaker_id, submitted_at) "
-                        + "SELECT ?, ?, ?, ?, 'SUBMITTED', ?, ? "
-                        + "WHERE (SELECT COUNT(*) FROM talk WHERE speaker_id = ?) < ? RETURNING id",
-                Long.class, title, format, duration, level, speakerId, submittedAt, speakerId, max);
-        return ids.isEmpty() ? null : ids.get(0);
+                        + "VALUES (?, ?, ?, ?, 'SUBMITTED', ?, ?) RETURNING id",
+                Long.class, title, format, duration, level, speakerId, submittedAt);
     }
 
     // old version, raced when the mobile app double-posted

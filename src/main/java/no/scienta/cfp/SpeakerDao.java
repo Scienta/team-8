@@ -28,6 +28,16 @@ public class SpeakerDao {
         return n != null && n > 0;
     }
 
+    /** Locks the speaker's row until the transaction ends, so whatever adds to their talks is applied one at a time. */
+    public void lockForUpdate(long id) {
+        jdbc.queryForList("SELECT id FROM speaker WHERE id = ? FOR UPDATE", id);
+    }
+
+    /** The number of talks the speaker has submitted as main speaker. */
+    public int talkCount(long id) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM talk WHERE speaker_id = ?", Integer.class, id);
+    }
+
     public boolean emailTaken(String email) {
         Integer n = jdbc.queryForObject("SELECT COUNT(*) FROM speaker WHERE lower(email) = lower(?)", Integer.class, email);
         return n != null && n > 0;
