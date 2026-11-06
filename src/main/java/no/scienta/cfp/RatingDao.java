@@ -1,7 +1,5 @@
 package no.scienta.cfp;
 
-import java.util.Map;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -23,11 +21,10 @@ public class RatingDao {
                 talkId, reviewerId, score, ratedAt);
     }
 
-    /**
-     * Returns {cnt, total} for one talk.
-     */
-    public Map<String, Object> stats(long talkId) {
-        return jdbc.queryForMap("SELECT COUNT(*) AS cnt, COALESCE(SUM(score), 0) AS total FROM rating WHERE talk_id = ?", talkId);
+    /** What the talk's ratings add up to, read in one statement so they agree with each other. */
+    public RatingSummary summary(long talkId) {
+        return jdbc.queryForObject("SELECT COUNT(*) AS cnt, COALESCE(SUM(score), 0) AS total FROM rating WHERE talk_id = ?",
+                (rs, row) -> new RatingSummary(rs.getInt("cnt"), rs.getLong("total")), talkId);
     }
 
     // public double average(long talkId) {
