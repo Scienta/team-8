@@ -30,7 +30,7 @@ Checked in this order; the first that applies wins.
 | Room or slot not one of R1 (`R4`, `s1`, …): no such place on the programme. Checked before `talkId`: check-1 failed when we answered 400 for `PUT /programme/R2/slot2` with a string `talkId`. | 404 |
 | `talkId` missing or not an integer | 400 |
 | No talk with that `talkId`: as `POST /talks` with an unknown `speakerId`, a body that refers to nothing is 400 | 400 |
-| Workshop outside `S4` (R6): a request that can never succeed, as the main speaker as co-speaker (co-speakers check-2) | 400 |
+| Workshop outside `S4` (R6). We first answered 400, as for the main speaker as co-speaker (co-speakers check-2); check-3 failed on it. | 409 |
 | Talk not `ACCEPTED` (R5): a conflict with its current state, which may change | 409 |
 | Talk already on the programme, anywhere (R8) | 409 |
 | Room and slot taken by another talk (R7) | 409 |

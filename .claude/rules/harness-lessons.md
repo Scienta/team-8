@@ -11,9 +11,9 @@ What the harness's checks told us about the choices a feature request leaves ope
   co-speaker hasn't failed a check, and the base app's 409 for the limit of 3 talks passes.
 - **A path that names nothing is 404, before the body is checked.** scheduling check-1 failed on `PUT
   /programme/R2/slot2` with `{"talkId": "4573"}` while we answered 400 for the string `talkId`.
-- **A request that can never succeed is 400, not 409.** co-speakers check-2 failed on making the main speaker a
-  co-speaker with 409 and has passed since we answer 400. We apply the same to a workshop outside the long slot
-  (scheduling); confirm or correct that once its checks have run.
+- **A request that can never succeed is 400, not 409, for co-speakers only.** co-speakers check-2 failed on making the
+  main speaker a co-speaker with 409 and has passed since we answer 400. It doesn't carry over: scheduling check-3
+  failed on our 400 for a workshop outside the long slot, which we now answer with 409.
 - **Registering for a talk that isn't a workshop is 409, as far as we know: the "can never succeed" rule above doesn't
   carry over.** workshop-registration check-2 failed on it with 404, then with 400 (its transcript ends on that
   request, after our 409 for a withdrawn workshop). We now answer 409, like for a workshop that isn't `ACCEPTED`;

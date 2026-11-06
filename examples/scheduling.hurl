@@ -59,7 +59,7 @@ HTTP 409
 # R6: a workshop needs the long slot
 PUT {{base_url}}/programme/R3/S5
 { "talkId": {{workshop_id}} }
-HTTP 400
+HTTP 409
 
 # R2: put the workshop in the long slot
 PUT {{base_url}}/programme/R3/S4

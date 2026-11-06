@@ -42,8 +42,7 @@ public class ProgrammeService {
         switch (schedulingOutcome(slot, talk.format, talk.status, programmeDao.isScheduled(talkId),
                 programmeDao.findTalkId(room, slot) != null, programmeDao.hasSpeakerInSlot(talkId, slot))) {
             case DOES_NOT_FIT:
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "a workshop needs the long slot, " + Slot.LONG);
+                throw conflict("a workshop needs the long slot, " + Slot.LONG);
             case NOT_ACCEPTED:
                 throw conflict("only accepted talks go on the programme, this one is " + talk.status);
             case ALREADY_SCHEDULED:

@@ -102,14 +102,14 @@ class ProgrammeTest {
     void r6_aWorkshopNeedsTheLongSlot() throws Exception {
         String workshop = acceptedTalk("WORKSHOP");
         for (String slot : new String[] {"S1", "S2", "S3", "S5"}) {
-            schedule(400, "R1", slot, workshop);
+            schedule(409, "R1", slot, workshop);
         }
         schedule(200, "R1", "S4", workshop);
     }
 
     @Test
     void r6_aWorkshopThatCanNeverFitIsRefusedBeforeItsStatus() throws Exception {
-        schedule(400, "R1", "S1", newTalk(newSpeaker(), "WORKSHOP"));
+        schedule(409, "R1", "S1", newTalk(newSpeaker(), "WORKSHOP"));
     }
 
     @Test
