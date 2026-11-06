@@ -15,18 +15,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class AcceptanceController {
 
     private final AcceptanceService service;
+    private final InstanceLocks locks;
 
-    public AcceptanceController(AcceptanceService service) {
+    public AcceptanceController(AcceptanceService service, InstanceLocks locks) {
         this.service = service;
+        this.locks = locks;
     }
 
     @PutMapping("/talks/{id}/status")
     public TalkDto decide(@PathVariable long id, @RequestBody Map<String, Object> body) {
-        return service.decide(id, body);
+        return locks.onTalk(id, () -> service.decide(id, body));
     }
 
     @PostMapping("/talks/{id}/withdraw")
     public TalkDto withdraw(@PathVariable long id, @RequestBody Map<String, Object> body) {
-        return service.withdraw(id, body);
+        return locks.onTalk(id, () -> service.withdraw(id, body));
     }
 }

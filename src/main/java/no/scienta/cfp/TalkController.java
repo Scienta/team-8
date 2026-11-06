@@ -17,15 +17,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class TalkController {
 
     private final ConferenceService service;
+    private final InstanceLocks locks;
 
-    public TalkController(ConferenceService service) {
+    public TalkController(ConferenceService service, InstanceLocks locks) {
         this.service = service;
+        this.locks = locks;
     }
 
     @PostMapping("/talks")
     @ResponseStatus(HttpStatus.CREATED)
     public TalkDto submit(@RequestBody TalkForm form) {
-        return service.submitTalk(form);
+        if (form.speakerId == null) {
+            return service.submitTalk(form);
+        }
+        return locks.onSpeaker(form.speakerId, () -> service.submitTalk(form));
     }
 
     @GetMapping("/talks/{id}")

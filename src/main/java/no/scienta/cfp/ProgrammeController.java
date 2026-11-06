@@ -18,15 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProgrammeController {
 
     private final ProgrammeService service;
+    private final InstanceLocks locks;
 
-    public ProgrammeController(ProgrammeService service) {
+    public ProgrammeController(ProgrammeService service, InstanceLocks locks) {
         this.service = service;
+        this.locks = locks;
     }
 
     @PutMapping("/programme/{room}/{slot}")
     public ProgrammeEntry schedule(@PathVariable String room, @PathVariable String slot,
                                    @RequestBody Map<String, Object> body) {
-        return service.schedule(room, slot, body);
+        return locks.onSlot(slot, () -> service.schedule(room, slot, body));
     }
 
     @GetMapping("/programme/{room}/{slot}")

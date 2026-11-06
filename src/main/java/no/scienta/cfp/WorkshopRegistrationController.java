@@ -18,15 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class WorkshopRegistrationController {
 
     private final WorkshopRegistrationService service;
+    private final InstanceLocks locks;
 
-    public WorkshopRegistrationController(WorkshopRegistrationService service) {
+    public WorkshopRegistrationController(WorkshopRegistrationService service, InstanceLocks locks) {
         this.service = service;
+        this.locks = locks;
     }
 
     @PostMapping("/workshops/{id}/registrations")
     @ResponseStatus(HttpStatus.CREATED)
     public Registration register(@PathVariable long id, @RequestBody Map<String, Object> body) {
-        return service.register(id, body);
+        return locks.onTalk(id, () -> service.register(id, body));
     }
 
     @GetMapping("/workshops/{id}/registrations")

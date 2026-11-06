@@ -12,14 +12,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class CoSpeakerController {
 
     private final CoSpeakerService service;
+    private final InstanceLocks locks;
 
-    public CoSpeakerController(CoSpeakerService service) {
+    public CoSpeakerController(CoSpeakerService service, InstanceLocks locks) {
         this.service = service;
+        this.locks = locks;
     }
 
     @PutMapping("/talks/{id}/co-speakers/{speakerId}")
     public TalkDto add(@PathVariable long id, @PathVariable long speakerId) {
-        return service.add(id, speakerId);
+        return locks.onTalkAndSpeaker(id, speakerId, () -> service.add(id, speakerId));
     }
 
     @DeleteMapping("/talks/{id}/co-speakers/{speakerId}")
