@@ -13,20 +13,14 @@ public class RatingDao {
     }
 
     /**
-     * Insert or replace the reviewer's rating. One statement, so two clicks at once can't make two rows.
+     * Inserts or replaces the reviewer's rating if the talk exists; returns false, changing nothing, if it doesn't.
+     * One statement, so two clicks at once can't make two rows, and one round trip to the database.
      */
-    public void save(long talkId, long reviewerId, int score, String ratedAt) {
-        jdbc.update("INSERT INTO rating (talk_id, reviewer_id, score, rated_at) VALUES (?, ?, ?, ?) "
+    public boolean saveIfTalkExists(long talkId, long reviewerId, int score, String ratedAt) {
+        return jdbc.update("INSERT INTO rating (talk_id, reviewer_id, score, rated_at) "
+                + "SELECT id, ?, ?, ? FROM talk WHERE id = ? "
                 + "ON CONFLICT (talk_id, reviewer_id) DO UPDATE SET score = excluded.score, rated_at = excluded.rated_at",
-                talkId, reviewerId, score, ratedAt);
-    }
-
-    /** What the talk's ratings add up to, read in one statement so they agree with each other. */
-    public RatingSummary summary(long talkId) {
-        return jdbc.queryForObject("SELECT COUNT(*) AS cnt, COALESCE(SUM(score), 0) AS total, "
-                + "COALESCE(MIN(score), 0) AS lowest, COALESCE(MAX(score), 0) AS highest FROM rating WHERE talk_id = ?",
-                (rs, row) -> new RatingSummary(rs.getInt("cnt"), rs.getLong("total"), rs.getInt("lowest"),
-                        rs.getInt("highest")), talkId);
+                reviewerId, score, ratedAt, talkId) > 0;
     }
 
     // public double average(long talkId) {

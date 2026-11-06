@@ -28,9 +28,14 @@ public class SpeakerDao {
         return n != null && n > 0;
     }
 
-    /** Locks the speaker's row until the transaction ends, so whatever adds to their talks is applied one at a time. */
-    public void lockForUpdate(long id) {
-        jdbc.queryForList("SELECT id FROM speaker WHERE id = ? FOR UPDATE", id);
+    /**
+     * Locks the speaker's row until the transaction ends, so whatever adds to their talks is applied one at a time.
+     * Returns the speaker's email, or null if there is no such speaker, so that one round trip also tells whether
+     * they exist.
+     */
+    public String lockForUpdate(long id) {
+        List<String> emails = jdbc.queryForList("SELECT email FROM speaker WHERE id = ? FOR UPDATE", String.class, id);
+        return emails.isEmpty() ? null : emails.get(0);
     }
 
     /**

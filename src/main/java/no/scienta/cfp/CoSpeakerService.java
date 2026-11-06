@@ -41,8 +41,9 @@ public class CoSpeakerService {
         if (talk == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "talk not found");
         }
-        requireSpeaker(speakerId);
-        speakerDao.lockForUpdate(speakerId);
+        if (speakerDao.lockForUpdate(speakerId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "speaker not found");
+        }
         List<Long> current = coSpeakerDao.findSpeakerIds(talkId);
         boolean inTheRunning = TalkStatus.valueOf(talk.status).isInTheRunning();
         switch (additionOutcome(talk.speakerId, current, speakerId, inTheRunning, speakerDao.load(speakerId))) {

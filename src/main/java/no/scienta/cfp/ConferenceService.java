@@ -41,21 +41,23 @@ public class ConferenceService {
     private final SpeakerDao speakerDao;
     private final TalkDao talkDao;
     private final RatingDao ratingDao;
-    private final CoSpeakerDao coSpeakerDao;
     private final NotificationService notifications;
 
     public ConferenceService(SpeakerDao speakerDao, TalkDao talkDao, RatingDao ratingDao,
-                             CoSpeakerDao coSpeakerDao, NotificationService notifications) {
+                             NotificationService notifications) {
         this.speakerDao = speakerDao;
         this.talkDao = talkDao;
         this.ratingDao = ratingDao;
-        this.coSpeakerDao = coSpeakerDao;
         this.notifications = notifications;
     }
 
     // ---------------------------------------------------------------- speakers
 
-    @Transactional
+    /**
+     * Registers the speaker. No transaction: each statement commits on its own, which saves the round trip of a
+     * commit, and the unique index on the email refuses one taken by a concurrent registration. The check before the
+     * insert keeps a taken email from using up an id.
+     */
     public Map<String, Object> registerSpeaker(SpeakerForm form) {
         if (speakerDao.emailTaken(form.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "email already registered");
@@ -123,7 +125,8 @@ public class ConferenceService {
         if (form.speakerId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "speakerId is required");
         }
-        if (!speakerDao.exists(form.speakerId)) {
+        String speakerEmail = speakerDao.lockForUpdate(form.speakerId);
+        if (speakerEmail == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "speaker " + form.speakerId + " does not exist");
         }
 
@@ -145,17 +148,15 @@ public class ConferenceService {
         requireBelowSubmissionLimit(form.speakerId);
         long id = talkDao.insert(form.title, form.format, duration, form.level, form.speakerId,
                 System.currentTimeMillis());
-        Map<String, Object> speaker = speakerDao.findById(form.speakerId);
-        notifications.talkSubmitted((String) speaker.get("email"), form.title);
+        notifications.talkSubmitted(speakerEmail, form.title);
         return getTalk(id);
     }
 
     /**
-     * Refuses with 409 unless the speaker's load is below the limit of talks. The speaker row stays locked until
-     * commit, so two requests adding to the same speaker's load can't both see room under the limit.
+     * Refuses with 409 unless the speaker's load is below the limit of talks. The caller has locked the speaker row
+     * until commit, so two requests adding to the same speaker's load can't both see room under the limit.
      */
     private void requireBelowSubmissionLimit(long speakerId) {
-        speakerDao.lockForUpdate(speakerId);
         if (speakerDao.load(speakerId) >= MAX_TALKS_PER_SPEAKER) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "a speaker can submit at most " + MAX_TALKS_PER_SPEAKER + " talks");
@@ -163,11 +164,10 @@ public class ConferenceService {
     }
 
     public TalkDto getTalk(long id) {
-        TalkDto talk = talkDao.findById(id);
+        TalkDto talk = talkDao.findWithDetailsById(id);
         if (talk == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "talk not found");
         }
-        addDetails(talk);
         return talk;
     }
 
@@ -175,21 +175,15 @@ public class ConferenceService {
         if (speakerDao.findById(speakerId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "speaker not found");
         }
-        List<TalkDto> talks = talkDao.findBySpeaker(speakerId);
-        for (TalkDto t : talks) {
-            addDetails(t);
-        }
-        return talks;
+        return talkDao.findWithDetailsBySpeaker(speakerId);
     }
 
     public List<TalkDto> listTalks(String sort, Long speakerId) {
         if (sort != null && !sort.equals("rating")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "sort must be 'rating'");
         }
-        List<TalkDto> talks = speakerId == null ? talkDao.findAll() : talkDao.findBySpeaker(speakerId);
-        for (TalkDto t : talks) {
-            addDetails(t);
-        }
+        List<TalkDto> talks = speakerId == null ? talkDao.findAllWithDetails()
+                : talkDao.findWithDetailsBySpeaker(speakerId);
         if ("rating".equals(sort)) {
             List<TalkDto> rated = new ArrayList<>();
             List<TalkDto> unrated = new ArrayList<>();
@@ -215,18 +209,6 @@ public class ConferenceService {
             return rated;
         }
         return talks;
-    }
-
-    /** Fills in what a talk shows besides its own row: its ratings and its co-speakers. */
-    private void addDetails(TalkDto talk) {
-        addRatings(talk);
-        talk.coSpeakerIds = coSpeakerDao.findSpeakerIds(talk.id);
-    }
-
-    private void addRatings(TalkDto talk) {
-        RatingSummary ratings = ratingDao.summary(talk.id);
-        talk.ratingCount = ratings.count();
-        talk.averageRating = ratings.average();
     }
 
     // ---------------------------------------------------------------- statistics
@@ -268,7 +250,7 @@ public class ConferenceService {
 
     // ---------------------------------------------------------------- ratings
 
-    @Transactional
+    /** Saves the rating in one statement, which also finds out whether the talk exists. */
     public Map<String, Object> rate(long talkId, long reviewerId, Map<String, Object> body) {
         if (reviewerId < 1) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "reviewerId must be positive");
@@ -281,11 +263,10 @@ public class ConferenceService {
         if (s < 1 || s > 5) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "score must be 1-5");
         }
-        if (!talkDao.exists(talkId)) {
+        String now = Utils.now();
+        if (!ratingDao.saveIfTalkExists(talkId, reviewerId, s, now)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "talk not found");
         }
-        String now = Utils.now();
-        ratingDao.save(talkId, reviewerId, s, now);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("talkId", talkId);

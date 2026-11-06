@@ -23,8 +23,7 @@ class ConferenceServiceTest {
         speakerDao = mock(SpeakerDao.class);
         talkDao = mock(TalkDao.class);
         ratingDao = mock(RatingDao.class);
-        service = new ConferenceService(speakerDao, talkDao, ratingDao, mock(CoSpeakerDao.class),
-                mock(NotificationService.class));
+        service = new ConferenceService(speakerDao, talkDao, ratingDao, mock(NotificationService.class));
     }
 
     @Test
@@ -45,7 +44,7 @@ class ConferenceServiceTest {
 
     @Test
     void unknownSpeakerIsRejected() {
-        when(speakerDao.exists(7L)).thenReturn(false);
+        when(speakerDao.lockForUpdate(7L)).thenReturn(null);
         ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.submitTalk(form()));
         assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
     }
