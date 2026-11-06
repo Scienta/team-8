@@ -1,5 +1,6 @@
 package no.scienta.cfp;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,6 +68,22 @@ public class SpeakerDao {
 
     public int count() {
         return jdbc.queryForObject("SELECT COUNT(*) FROM speaker", Integer.class);
+    }
+
+    /** The number of speakers who are the main speaker of at least one talk. */
+    public int countWithTalks() {
+        return jdbc.queryForObject(
+                "SELECT COUNT(DISTINCT t.speaker_id) FROM talk t JOIN speaker s ON s.id = t.speaker_id", Integer.class);
+    }
+
+    /** The names of the speakers who are the main speaker of at least one talk, by speaker id. */
+    public Map<Long, String> namesOfSpeakersWithTalks() {
+        Map<Long, String> names = new HashMap<>();
+        jdbc.query("SELECT s.id, s.name FROM speaker s WHERE EXISTS (SELECT 1 FROM talk t WHERE t.speaker_id = s.id)",
+                rs -> {
+                    names.put(rs.getLong("id"), rs.getString("name"));
+                });
+        return names;
     }
 
     // Used by the old admin page to look people up.
