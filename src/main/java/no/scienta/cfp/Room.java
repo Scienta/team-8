@@ -1,5 +1,6 @@
 package no.scienta.cfp;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -10,11 +11,9 @@ public enum Room {
 
     /** The room with exactly this name, if there is one. */
     static Optional<Room> named(String name) {
-        for (Room room : values()) {
-            if (room.name().equals(name)) {
-                return Optional.of(room);
-            }
-        }
-        return Optional.empty();
+        return Arrays.stream(values())
+            .filter(room ->
+                room.name().equals(name))
+                .findAny();
     }
 }
