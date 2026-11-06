@@ -14,7 +14,9 @@ What the harness's checks told us about the choices a feature request leaves ope
 - **A request that can never succeed is 400, not 409, for co-speakers only.** co-speakers check-2 failed on making the
   main speaker a co-speaker with 409 and has passed since we answer 400. It doesn't carry over: scheduling check-3
   failed on our 400 for a workshop outside the long slot, which we now answer with 409.
-- **Registering for a talk that isn't a workshop is 409, as far as we know: the "can never succeed" rule above doesn't
-  carry over.** workshop-registration check-2 failed on it with 404, then with 400 (its transcript ends on that
-  request, after our 409 for a withdrawn workshop). We now answer 409, like for a workshop that isn't `ACCEPTED`;
-  confirm or correct once check-2 has run again.
+- **Registering for a talk that isn't a workshop is 409: the "can never succeed" rule above doesn't carry over.**
+  workshop-registration check-2 failed on it with 404, then with 400, and got past it with 409, like for a workshop
+  that isn't `ACCEPTED`.
+- **Listing what a talk of the wrong kind has is 200 with `[]`, not 404.** The path names a talk that exists, so it
+  isn't "a path that names nothing". workshop-registration check-2 failed on our 404 for `GET
+  /workshops/{id}/registrations` of a `LIGHTNING_20` talk, right after our 409 for registering to it.

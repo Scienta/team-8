@@ -73,7 +73,7 @@ class WorkshopRegistrationsTest {
     void r4_aTalkThatIsntAWorkshopIsAConflictAndAMissingOneNotFound() throws Exception {
         String talk = acceptedTalk("PRESENTATION");
         register(409, talk, "Ada", "ada@example.com");
-        expect(404, "GET", registrations(talk), null);
+        assertEquals("[]", expect(200, "GET", registrations(talk), null));
         register(404, "999999", "Ada", "ada@example.com");
         expect(404, "GET", registrations("999999"), null);
         expect(400, "GET", registrations("abc"), null);

@@ -80,6 +80,11 @@ POST {{base_url}}/workshops/{{talk_id}}/registrations
 { "name": "Ada Lovelace", "email": "ada@example.com" }
 HTTP 409
 
+GET {{base_url}}/workshops/{{talk_id}}/registrations
+HTTP 200
+[Asserts]
+jsonpath "$" count == 0
+
 GET {{base_url}}/workshops/999999999/registrations
 HTTP 404
 

@@ -11,7 +11,7 @@ the API surface. This file adds what it leaves open: status codes, edge cases an
 | R1 | `POST /workshops/{id}/registrations` with `{"name": …, "email": …}` registers an attendee and returns the registration (`id`, `workshopId`, `name`, `email`), 201. | request |
 | R2 | Name and email are both required: a missing, non-string or blank value is refused. | request |
 | R3 | An email has to look like one, as for speakers (`Utils.isValidEmail`: an `@` with a `.` after it). | **(ours)** |
-| R4 | A workshop is a talk with format `WORKSHOP`. Any other talk isn't one and doesn't take registrations; listing its registrations finds no workshop. | request, **(ours)** for 409 and 404 |
+| R4 | A workshop is a talk with format `WORKSHOP`. Any other talk isn't one and doesn't take registrations; its list of registrations is `[]`. check-2 failed on 404 for that list. | request, **(ours)** for 409 and 200 |
 | R5 | Only an `ACCEPTED` workshop takes registrations. `SUBMITTED`, `WAITLISTED`, `REJECTED` and `WITHDRAWN` ones don't. | request |
 | R6 | A workshop that is withdrawn after people registered keeps them on its list. | request |
 | R7 | At most 20 registrations per workshop, ever. | request |
@@ -28,8 +28,8 @@ Checked in this order; the first that applies wins.
 |---|---|
 | `id` not an integer, body missing or not JSON | 400 |
 | `name` or `email` missing, not a string or blank (R2), or email not an email (R3) | 400 |
-| No talk with that id, or (when listing) the talk isn't a `WORKSHOP` (R4) | 404 |
-| Registering for a talk that isn't a `WORKSHOP` (R4), refused like one that isn't `ACCEPTED`. check-2 failed on it with 404 and with 400. | 409 |
+| No talk with that id | 404 |
+| Registering for a talk that isn't a `WORKSHOP` (R4), refused like one that isn't `ACCEPTED`. check-2 failed on it with 404 and with 400, and got past it with 409. | 409 |
 | Workshop not `ACCEPTED` (R5): a conflict with its current state, which may change | 409 |
 | Email already registered for this workshop (R8), even when the workshop is full | 409 |
 | Workshop has 20 registrations (R7) | 409 |

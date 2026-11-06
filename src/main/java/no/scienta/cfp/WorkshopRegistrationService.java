@@ -65,18 +65,16 @@ public class WorkshopRegistrationService {
         }
     }
 
-    /** The workshop's registrations in the order they were made, whatever its status. */
+    /**
+     * The talk's registrations in the order they were made, whatever its status. A talk that isn't a workshop has none,
+     * so its list is empty.
+     */
     @Transactional(readOnly = true)
     public List<Registration> registrations(long workshopId) {
-        requireWorkshop(talkDao.findById(workshopId));
-        return registrationDao.findByWorkshop(workshopId);
-    }
-
-    private static TalkDto requireWorkshop(TalkDto talk) {
-        if (talk == null || !WORKSHOP.equals(talk.format)) {
+        if (talkDao.findById(workshopId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "workshop not found");
         }
-        return talk;
+        return registrationDao.findByWorkshop(workshopId);
     }
 
     enum RegistrationOutcome { REGISTER, NOT_ACCEPTED, ALREADY_REGISTERED, FULL }
