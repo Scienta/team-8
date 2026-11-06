@@ -45,6 +45,10 @@ public class TalkDao {
         return list.isEmpty() ? null : list.get(0);
     }
 
+    public void updateStatus(long id, String status) {
+        jdbc.update("UPDATE talk SET status = ? WHERE id = ?", status, id);
+    }
+
     public List<TalkDto> findBySpeaker(long speakerId) {
         return jdbc.query("SELECT " + COLUMNS + " FROM talk WHERE speaker_id = ? ORDER BY id", mapper, speakerId);
     }
