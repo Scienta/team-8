@@ -52,7 +52,7 @@ class WarmUpBeforeTraffic implements SmartLifecycle {
         this.timeout = timeout;
     }
 
-    /** Two phases before the web server, so that something else can run between the warm-up and the web server. */
+    /** Two phases before the web server, leaving the phase in between for {@link OpenPortInQuietWindow}. */
     static final int PHASE = WebServerApplicationContext.START_STOP_LIFECYCLE_PHASE - 2;
 
     @Override

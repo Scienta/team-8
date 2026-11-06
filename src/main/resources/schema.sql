@@ -80,3 +80,10 @@ CREATE TABLE IF NOT EXISTS programme_entry (
     talk_id INTEGER NOT NULL UNIQUE REFERENCES talk (id),
     PRIMARY KEY (room, slot)
 );
+
+-- 2026-11 deployments: each version of the app that has opened its port, so that a start-up can tell a deploy (a new
+-- version) from a cold start after scaling to zero (a version that has opened before). See OpenPortInQuietWindow.
+CREATE TABLE IF NOT EXISTS deployment (
+    version   TEXT PRIMARY KEY,
+    opened_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
