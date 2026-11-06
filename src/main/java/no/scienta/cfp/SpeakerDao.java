@@ -33,9 +33,15 @@ public class SpeakerDao {
         jdbc.queryForList("SELECT id FROM speaker WHERE id = ? FOR UPDATE", id);
     }
 
-    /** The number of talks the speaker has submitted as main speaker. */
-    public int talkCount(long id) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM talk WHERE speaker_id = ?", Integer.class, id);
+    /**
+     * The speaker's load: the number of talks still in the running ({@link TalkStatus#isInTheRunning()}) that they
+     * present, as main speaker or as co-speaker.
+     */
+    public int load(long id) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM talk t WHERE t.status NOT IN ('REJECTED', 'WITHDRAWN') "
+                        + "AND (t.speaker_id = ? OR EXISTS "
+                        + "(SELECT 1 FROM co_speaker c WHERE c.talk_id = t.id AND c.speaker_id = ?))",
+                Integer.class, id, id);
     }
 
     public boolean emailTaken(String email) {

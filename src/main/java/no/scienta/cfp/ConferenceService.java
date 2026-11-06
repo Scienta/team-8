@@ -151,12 +151,12 @@ public class ConferenceService {
     }
 
     /**
-     * Refuses with 409 unless the speaker is below the limit of talks. The speaker row stays locked until commit, so
-     * two submissions for the same speaker can't both see room under the limit.
+     * Refuses with 409 unless the speaker's load is below the limit of talks. The speaker row stays locked until
+     * commit, so two requests adding to the same speaker's load can't both see room under the limit.
      */
     private void requireBelowSubmissionLimit(long speakerId) {
         speakerDao.lockForUpdate(speakerId);
-        if (speakerDao.talkCount(speakerId) >= MAX_TALKS_PER_SPEAKER) {
+        if (speakerDao.load(speakerId) >= MAX_TALKS_PER_SPEAKER) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "a speaker can submit at most " + MAX_TALKS_PER_SPEAKER + " talks");
         }

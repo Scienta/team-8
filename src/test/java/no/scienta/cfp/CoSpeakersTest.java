@@ -22,7 +22,8 @@ import org.springframework.test.context.DynamicPropertySource;
 
 /**
  * The rules and errors of {@code workflow/specs/co-speakers.md}, against the real app on a random port with a throwaway
- * database. Test names cite the rule (R1–R12) they cover.
+ * database. Test names cite the rule (R1–R12) they cover. R9 was replaced by the submission cap, see
+ * {@code SubmissionCapTest}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CoSpeakersTest {
@@ -114,22 +115,6 @@ class CoSpeakersTest {
         expect(200, "PUT", coSpeakerPath(talk, co));
         assertEquals("[]", expect(200, "GET", "/speakers/" + co + "/talks"));
         assertEquals("[]", expect(200, "GET", "/talks?speakerId=" + co));
-    }
-
-    @Test
-    void r9_aSpeakerAtTheSubmissionLimitCanStillCoSpeak() throws Exception {
-        String busy = newSpeaker();
-        for (int i = 0; i < 3; i++) {
-            newTalk(busy);
-        }
-        String talk = newTalk(newSpeaker());
-        expect(200, "PUT", coSpeakerPath(talk, busy));
-
-        String other = newSpeaker();
-        expect(200, "PUT", coSpeakerPath(newTalk(newSpeaker()), other));
-        for (int i = 0; i < 3; i++) {
-            newTalk(other);
-        }
     }
 
     @Test

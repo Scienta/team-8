@@ -32,4 +32,9 @@ public enum TalkStatus {
     boolean speakerMayWithdraw() {
         return this != REJECTED && this != WITHDRAWN;
     }
+
+    /** Whether a talk in this status is still in the running, and so counts towards its speakers' load. */
+    boolean isInTheRunning() {
+        return this != REJECTED && this != WITHDRAWN;
+    }
 }

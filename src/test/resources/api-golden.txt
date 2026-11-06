@@ -291,28 +291,28 @@ GET /talks?speakerId=999
   []
 
 PUT /talks/1/co-speakers/2
-  -> 200 application/json;charset=UTF-8
-  {"id":1,"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1,"durationMinutes":120,"status":"SUBMITTED","submittedAt":"9999-99-99T99:99:99.999+00:00","submittedOn":"9999-99-99","averageRating":4.25,"ratingCount":4,"coSpeakerIds":[2]}
+  -> 409 application/json;charset=UTF-8
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":409,"error":"Conflict","message":"a speaker presents at most 3 talks","path":"/talks/1/co-speakers/2"}
 
 PUT /talks/1/co-speakers/3
-  -> 200 application/json;charset=UTF-8
-  {"id":1,"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1,"durationMinutes":120,"status":"SUBMITTED","submittedAt":"9999-99-99T99:99:99.999+00:00","submittedOn":"9999-99-99","averageRating":4.25,"ratingCount":4,"coSpeakerIds":[2,3]}
+  -> 409 application/json;charset=UTF-8
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":409,"error":"Conflict","message":"a speaker presents at most 3 talks","path":"/talks/1/co-speakers/3"}
 
 PUT /talks/1/co-speakers/2
-  -> 200 application/json;charset=UTF-8
-  {"id":1,"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1,"durationMinutes":120,"status":"SUBMITTED","submittedAt":"9999-99-99T99:99:99.999+00:00","submittedOn":"9999-99-99","averageRating":4.25,"ratingCount":4,"coSpeakerIds":[2,3]}
+  -> 409 application/json;charset=UTF-8
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":409,"error":"Conflict","message":"a speaker presents at most 3 talks","path":"/talks/1/co-speakers/2"}
 
 DELETE /talks/1/co-speakers/3
-  -> 200 application/json;charset=UTF-8
-  {"id":1,"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1,"durationMinutes":120,"status":"SUBMITTED","submittedAt":"9999-99-99T99:99:99.999+00:00","submittedOn":"9999-99-99","averageRating":4.25,"ratingCount":4,"coSpeakerIds":[2]}
+  -> 404 application/json;charset=UTF-8
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":404,"error":"Not Found","message":"speaker is not a co-speaker of this talk","path":"/talks/1/co-speakers/3"}
 
 PUT /talks/1/status {"status":"WAITLISTED"}
   -> 200 application/json;charset=UTF-8
-  {"id":1,"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1,"durationMinutes":120,"status":"WAITLISTED","submittedAt":"9999-99-99T99:99:99.999+00:00","submittedOn":"9999-99-99","averageRating":4.25,"ratingCount":4,"coSpeakerIds":[2]}
+  {"id":1,"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1,"durationMinutes":120,"status":"WAITLISTED","submittedAt":"9999-99-99T99:99:99.999+00:00","submittedOn":"9999-99-99","averageRating":4.25,"ratingCount":4,"coSpeakerIds":[]}
 
 PUT /talks/1/status {"status":"ACCEPTED"}
   -> 200 application/json;charset=UTF-8
-  {"id":1,"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1,"durationMinutes":120,"status":"ACCEPTED","submittedAt":"9999-99-99T99:99:99.999+00:00","submittedOn":"9999-99-99","averageRating":4.25,"ratingCount":4,"coSpeakerIds":[2]}
+  {"id":1,"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1,"durationMinutes":120,"status":"ACCEPTED","submittedAt":"9999-99-99T99:99:99.999+00:00","submittedOn":"9999-99-99","averageRating":4.25,"ratingCount":4,"coSpeakerIds":[]}
 
 PUT /talks/2/status {"status":"ACCEPTED"}
   -> 409 application/json;charset=UTF-8
@@ -328,11 +328,11 @@ POST /talks/1/withdraw {"speakerId":2}
 
 POST /talks/1/withdraw {"speakerId":1}
   -> 200 application/json;charset=UTF-8
-  {"id":1,"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1,"durationMinutes":120,"status":"WITHDRAWN","submittedAt":"9999-99-99T99:99:99.999+00:00","submittedOn":"9999-99-99","averageRating":4.25,"ratingCount":4,"coSpeakerIds":[2]}
+  {"id":1,"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1,"durationMinutes":120,"status":"WITHDRAWN","submittedAt":"9999-99-99T99:99:99.999+00:00","submittedOn":"9999-99-99","averageRating":4.25,"ratingCount":4,"coSpeakerIds":[]}
 
 GET /talks/1
   -> 200 application/json;charset=UTF-8
-  {"id":1,"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1,"durationMinutes":120,"status":"WITHDRAWN","submittedAt":"9999-99-99T99:99:99.999+00:00","submittedOn":"9999-99-99","averageRating":4.25,"ratingCount":4,"coSpeakerIds":[2]}
+  {"id":1,"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1,"durationMinutes":120,"status":"WITHDRAWN","submittedAt":"9999-99-99T99:99:99.999+00:00","submittedOn":"9999-99-99","averageRating":4.25,"ratingCount":4,"coSpeakerIds":[]}
 
 GET /health
   -> 200 application/json;charset=UTF-8
