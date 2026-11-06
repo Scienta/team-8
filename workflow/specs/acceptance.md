@@ -49,5 +49,5 @@ Checked in this order; the first that applies wins.
 
 - `TalkStatusTest`: the transition table, as a pure function.
 - `AcceptanceTest`: every rule and error above against the real app, plus simultaneous decisions and withdrawals on
-  one talk (R10).
+  one talk (R10). Verified to fail when the row lock is removed.
 - `examples/acceptance.hurl`: the happy paths and the main refusals, for running against the deployed service.
