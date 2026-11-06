@@ -7,6 +7,10 @@ What the harness's checks told us about the choices a feature request leaves ope
   nothing", that call is a 200. Anything else that changes nothing because there is nothing to change is a refusal: a
   `DELETE` of something that isn't there is 404, a move to the state a thing is already in is 409. (co-speakers
   check-1, R11)
+- **A `PUT` that puts a thing where it already is, is 200, even if the feature request doesn't say so.** scheduling
+  check-1 failed on our 409 for putting a talk again in the room and slot it was in (its transcript ends on that
+  request). `PUT` is idempotent in HTTP, so this beats the rule above for `PUT`; a state change through `PUT
+  /talks/{id}/status` may still be 409.
 - **A request that conflicts with the talk's current state is 409, as far as we know.** Our 409 for a third
   co-speaker hasn't failed a check, and the base app's 409 for the limit of 3 talks passes.
 - **A path that names nothing is 404, before the body is checked.** scheduling check-1 failed on `PUT

@@ -15,14 +15,15 @@ made by the team on 2026-11-06, not by the product owner.
 | R5 | Only an `ACCEPTED` talk goes on the programme. | request |
 | R6 | A workshop (format `WORKSHOP`) needs the long slot, `S4`. Every other format fits any slot, `S4` included. | request |
 | R7 | One talk per room and slot. | request |
-| R8 | A talk is on the programme at most once. To move it, take it out first: a `PUT` of a talk that is already on the programme is refused, even to the room and slot it is in. | request, **(ours)** for the same place |
+| R8 | A talk is on the programme at most once. To move it, take it out first: a `PUT` of a talk that is already on the programme elsewhere is refused. A `PUT` of a talk to the room and slot it is already in changes nothing and returns its entry, 200, even if the talk has changed since (R10). We first refused it with 409; scheduling check-1 failed on it. | request, **(ours)** for the same place |
 | R9 | The people on talks in the same slot are all different: no main speaker or co-speaker of the new talk is a main speaker or co-speaker of a talk already in that slot, in any room. | request |
 | R10 | The rules are checked when a talk is put on the programme, against the talks as they are then. A talk that changes afterwards (withdrawn, gets a co-speaker) stays where it is, and its entry still shows. | request |
 | R11 | Concurrent `PUT`s never break R7–R9. Each `PUT` locks the talk's row, then the slot's row in `programme_slot` (`SELECT … FOR UPDATE`), always in that order, so two talks can't both pass the checks for one slot. A primary key on (room, slot) and a unique index on the talk back R7 and R8 up. | request, **(ours)** for how |
 
 ## Errors **(ours)**
 
-Checked in this order; the first that applies wins.
+Checked in this order; the first that applies wins. A talk put where it already is (R8) is 200 once the body and the
+talk are known to be valid, before any 409.
 
 | Case | Status |
 |---|---|
@@ -32,7 +33,7 @@ Checked in this order; the first that applies wins.
 | No talk with that `talkId`: as `POST /talks` with an unknown `speakerId`, a body that refers to nothing is 400 | 400 |
 | Workshop outside `S4` (R6). We first answered 400, as for the main speaker as co-speaker (co-speakers check-2); check-3 failed on it. | 409 |
 | Talk not `ACCEPTED` (R5): a conflict with its current state, which may change | 409 |
-| Talk already on the programme, anywhere (R8) | 409 |
+| Talk already on the programme in another room or slot (R8). In this room and slot it is 200, not an error. | 409 |
 | Room and slot taken by another talk (R7) | 409 |
 | A speaker of the talk is already speaking in that slot (R9) | 409 |
 | `GET` or `DELETE` of a room and slot with no talk in it | 404 |

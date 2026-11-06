@@ -130,8 +130,8 @@ class ProgrammeTest {
     @Test
     void r8_aTalkIsOnTheProgrammeOnceAndMovesByBeingTakenOutFirst() throws Exception {
         String talk = acceptedTalk("PRESENTATION");
-        schedule(200, "R1", "S1", talk);
-        schedule(409, "R1", "S1", talk);
+        String entry = schedule(200, "R1", "S1", talk);
+        assertEquals(entry, schedule(200, "R1", "S1", talk));
         schedule(409, "R2", "S2", talk);
         expect(404, "GET", place("R2", "S2"), null);
         expect(204, "DELETE", place("R1", "S1"), null);
@@ -190,6 +190,7 @@ class ProgrammeTest {
         withdraw(talk, speaker);
         assertTrue(expect(200, "GET", place("R1", "S1"), null).contains("\"talkId\":" + talk + "}"));
         assertTrue(expect(200, "GET", place("R2", "S1"), null).contains("\"talkId\""));
+        schedule(200, "R1", "S1", talk);
     }
 
     @Test

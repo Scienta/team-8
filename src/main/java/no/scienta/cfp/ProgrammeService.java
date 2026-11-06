@@ -39,8 +39,11 @@ public class ProgrammeService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "talk " + talkId + " does not exist");
         }
         programmeDao.lockSlot(slot);
-        switch (schedulingOutcome(slot, talk.format, talk.status, programmeDao.isScheduled(talkId),
-                programmeDao.findTalkId(room, slot) != null, programmeDao.hasSpeakerInSlot(talkId, slot))) {
+        Long talkInPlace = programmeDao.findTalkId(room, slot);
+        switch (schedulingOutcome(slot, talk.format, talk.status, Long.valueOf(talkId).equals(talkInPlace),
+                programmeDao.isScheduled(talkId), talkInPlace != null, programmeDao.hasSpeakerInSlot(talkId, slot))) {
+            case ALREADY_THERE:
+                return new ProgrammeEntry(room, slot, talkId);
             case DOES_NOT_FIT:
                 throw conflict("a workshop needs the long slot, " + Slot.LONG);
             case NOT_ACCEPTED:
@@ -84,15 +87,21 @@ public class ProgrammeService {
         }
     }
 
-    enum SchedulingOutcome { SCHEDULE, DOES_NOT_FIT, NOT_ACCEPTED, ALREADY_SCHEDULED, PLACE_TAKEN, SPEAKER_BUSY }
+    enum SchedulingOutcome {
+        SCHEDULE, ALREADY_THERE, DOES_NOT_FIT, NOT_ACCEPTED, ALREADY_SCHEDULED, PLACE_TAKEN, SPEAKER_BUSY
+    }
 
     /**
-     * Decides whether a talk of the given format and status goes into a room and slot, given whether the talk is on
-     * the programme already, whether the place is taken and whether one of its speakers speaks in that slot already.
-     * Refusals that can never change come before conflicts with the current state.
+     * Decides whether a talk of the given format and status goes into a room and slot, given whether the talk is in
+     * that very place already, whether it is on the programme anywhere, whether the place is taken and whether one of
+     * its speakers speaks in that slot already. Putting a talk where it already is changes nothing and succeeds, even
+     * if the talk has changed since. Refusals that can never change come before conflicts with the current state.
      */
-    static SchedulingOutcome schedulingOutcome(Slot slot, String format, String status, boolean alreadyScheduled,
-                                               boolean placeTaken, boolean speakerBusy) {
+    static SchedulingOutcome schedulingOutcome(Slot slot, String format, String status, boolean alreadyThere,
+                                               boolean alreadyScheduled, boolean placeTaken, boolean speakerBusy) {
+        if (alreadyThere) {
+            return SchedulingOutcome.ALREADY_THERE;
+        }
         if (!slot.fits(format)) {
             return SchedulingOutcome.DOES_NOT_FIT;
         }

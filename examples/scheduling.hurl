@@ -83,7 +83,7 @@ PUT {{base_url}}/programme/R3/S4
 { "talkId": {{talk_id}} }
 HTTP 409
 
-# R1, R8: the presentation goes elsewhere, and only once
+# R1, R8: the presentation goes elsewhere, and only once; putting it where it is again changes nothing
 PUT {{base_url}}/programme/R3/S5
 { "talkId": {{talk_id}} }
 HTTP 200
@@ -92,6 +92,12 @@ jsonpath "$.start" == "15:45"
 jsonpath "$.end" == "16:45"
 
 PUT {{base_url}}/programme/R3/S5
+{ "talkId": {{talk_id}} }
+HTTP 200
+[Asserts]
+jsonpath "$.talkId" == {{talk_id}}
+
+PUT {{base_url}}/programme/R3/S4
 { "talkId": {{talk_id}} }
 HTTP 409
 
