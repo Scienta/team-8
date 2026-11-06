@@ -3,10 +3,10 @@ package no.scienta.cfp;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +28,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger("http");
     private static final int MAX_BODY_CHARS = 1000;
+    private static final int MAX_CACHED_BYTES = 64 * 1024;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -37,7 +38,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        ContentCachingRequestWrapper req = new ContentCachingRequestWrapper(request);
+        ContentCachingRequestWrapper req = new ContentCachingRequestWrapper(request, MAX_CACHED_BYTES);
         ContentCachingResponseWrapper res = new ContentCachingResponseWrapper(response);
         long start = System.nanoTime();
         try {

@@ -1,6 +1,9 @@
 package no.scienta.cfp;
 
 import java.text.DateFormat;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -38,20 +41,30 @@ public class Utils {
         }
     }
 
+    private static final DateTimeFormatter REPORTING_TIMESTAMP =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSxxx").withZone(ZoneOffset.UTC);
+    private static final DateTimeFormatter REPORTING_DATE =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneOffset.UTC);
+
     /**
-     * Epoch millis to a date-only java.sql.Date (UTC day).
+     * Epoch millis as the legacy reporting tools read {@code submittedAt}: UTC, always with milliseconds, and the
+     * offset always written {@code +00:00}, never {@code Z}. For example {@code 2026-11-04T12:30:05.123+00:00}.
      */
-    public static java.sql.Date toSqlDate(long millis) {
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-        f.setTimeZone(UTC);
-        return java.sql.Date.valueOf(f.format(new Date(millis)));
+    public static String reportingTimestamp(long millis) {
+        return REPORTING_TIMESTAMP.format(Instant.ofEpochMilli(millis));
+    }
+
+    /** Epoch millis as the UTC day, {@code yyyy-MM-dd}, as the legacy reporting tools read {@code submittedOn}. */
+    public static String reportingDate(long millis) {
+        return REPORTING_DATE.format(Instant.ofEpochMilli(millis));
     }
 
     /**
-     * "11/4/26, 1:05 PM", what the reviewer UI shows.
+     * "11/4/26, 1:05 PM", what the reviewer UI shows. The pattern is spelled out because the JDK's own US short format
+     * puts a narrow no-break space before AM/PM from Java 20 on, and the reviewer UI needs an ordinary space.
      */
     public static String usShort(Date d) {
-        DateFormat f = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.US);
+        DateFormat f = new SimpleDateFormat("M/d/yy, h:mm a", Locale.US);
         f.setTimeZone(UTC);
         return f.format(d);
     }

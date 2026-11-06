@@ -25,8 +25,9 @@ public class TalkDao {
         t.status = rs.getString("status");
         t.speakerId = rs.getLong("speaker_id");
         long millis = rs.getLong("submitted_at");
-        t.submittedAt = new Date(millis);
-        t.submittedOn = Utils.toSqlDate(millis);
+        t.submittedAt = Utils.reportingTimestamp(millis);
+        t.submittedOn = Utils.reportingDate(millis);
+        t.submittedTime = new Date(millis);
         return t;
     };
 
