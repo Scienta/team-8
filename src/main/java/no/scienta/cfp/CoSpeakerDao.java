@@ -29,8 +29,8 @@ public class CoSpeakerDao {
                 talkId, speakerId);
     }
 
-    /** Removes the co-speaker, or does nothing if they don't co-speak on the talk. */
-    public void remove(long talkId, long speakerId) {
-        jdbc.update("DELETE FROM co_speaker WHERE talk_id = ? AND speaker_id = ?", talkId, speakerId);
+    /** Removes the co-speaker; returns false, changing nothing, if they don't co-speak on the talk. */
+    public boolean remove(long talkId, long speakerId) {
+        return jdbc.update("DELETE FROM co_speaker WHERE talk_id = ? AND speaker_id = ?", talkId, speakerId) > 0;
     }
 }
