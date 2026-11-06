@@ -79,7 +79,7 @@ class CoSpeakersTest {
     void r5_theMainSpeakerCantCoSpeakTheirOwnTalk() throws Exception {
         String main = newSpeaker();
         String talk = newTalk(main);
-        expect(409, "PUT", coSpeakerPath(talk, main));
+        expect(400, "PUT", coSpeakerPath(talk, main));
         assertEquals("", coSpeakers(expect(200, "GET", "/talks/" + talk)));
     }
 

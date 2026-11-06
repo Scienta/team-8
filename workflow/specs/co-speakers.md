@@ -31,10 +31,10 @@ Checked in this order; the first that applies wins.
 | Talk doesn't exist | 404 |
 | Speaker doesn't exist | 404 |
 | `DELETE` of a speaker who isn't a co-speaker of the talk (R11) | 404 |
-| `PUT` with the main speaker (R5) | 409 |
+| `PUT` with the main speaker (R5): a request that can never succeed, not a conflict with the talk's state. The harness rejected our first choice, 409 (co-speakers check-2) | 400 |
 | `PUT` of a new co-speaker when the talk has two (R4) | 409 |
 
-409 matches what the base app answers when the limit of 3 talks is reached.
+409 for a full talk matches what the base app answers when the limit of 3 talks is reached.
 
 ## Tests
 
