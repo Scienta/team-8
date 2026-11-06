@@ -83,3 +83,10 @@ CREATE TABLE IF NOT EXISTS programme_entry (
 
 -- 2026-11 a speaker's load and the speaker clash in a slot look co-speakers up by speaker
 CREATE INDEX IF NOT EXISTS ix_co_speaker_speaker ON co_speaker (speaker_id);
+
+-- 2026-11 deployments: each version of the app that has opened its port, so that a start-up can tell a deploy (a new
+-- version) from a cold start after scaling to zero (a version that has opened before). See OpenPortInQuietWindow.
+CREATE TABLE IF NOT EXISTS deployment (
+    version   TEXT PRIMARY KEY,
+    opened_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

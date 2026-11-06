@@ -20,6 +20,9 @@ RUN java -XX:AOTCacheOutput=/app/app.aot -Dspring.context.exit=onRefresh -Dsprin
         -Dcfp.warm-up.rounds=0 -jar /app/cfp.jar
 # Scaleway's database needs TLS; the Compose Postgres doesn't, so application.properties defaults to off.
 ENV PGSSLMODE=require
+# A deploy opens its port when the harness is quiet, so the hand-over from the old instance falls between two bursts.
+# See OpenPortInQuietWindow. Off everywhere else, so tests and local runs start at once.
+ENV CFP_QUIET_WINDOW_ENABLED=true
 # GET /health reports this as its version: docker build --build-arg GIT_SHA=$(git rev-parse HEAD) .
 ARG GIT_SHA=unknown
 ENV GIT_SHA=$GIT_SHA
