@@ -95,11 +95,16 @@ class CoSpeakersTest {
     }
 
     @Test
-    void r11_removingSomeoneWhoIsNotACoSpeakerChangesNothing() throws Exception {
+    void r11_removingSomeoneWhoIsNotACoSpeakerIsNotFoundAndChangesNothing() throws Exception {
         String talk = newTalk(newSpeaker());
         String a = newSpeaker();
+        String b = newSpeaker();
         expect(200, "PUT", coSpeakerPath(talk, a));
-        assertEquals(a, coSpeakers(expect(200, "DELETE", coSpeakerPath(talk, newSpeaker()))));
+        expect(200, "PUT", coSpeakerPath(talk, b));
+        expect(200, "DELETE", coSpeakerPath(talk, a));
+        expect(404, "DELETE", coSpeakerPath(talk, a));
+        expect(404, "DELETE", coSpeakerPath(talk, newSpeaker()));
+        assertEquals(b, coSpeakers(expect(200, "GET", "/talks/" + talk)));
     }
 
     @Test

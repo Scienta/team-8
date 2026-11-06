@@ -18,7 +18,7 @@ the team's, not the product owner's.
 | R8 | `GET /speakers/{id}/talks` and `GET /talks?speakerId=` still list only talks where the speaker is the main speaker. | request |
 | R9 | Co-speaking doesn't count towards the limit of 3 talks, and a speaker at the limit can still co-speak. | request |
 | R10 | Removed and then re-added goes to the end of the order. | **(ours)** |
-| R11 | Removing someone who is a registered speaker but not a co-speaker of the talk changes nothing: 200, the talk unchanged (idempotent, like R7). | **(ours)** |
+| R11 | Removing someone who is a registered speaker but not a co-speaker of the talk (including removing the same one twice) changes nothing and answers 404. The harness rejected our first choice, 200 (idempotent like R7). | **(ours)** |
 | R12 | The limit of two holds under concurrent `PUT`s for the same talk: the talk row is locked (`SELECT … FOR UPDATE`) while adding. | **(ours)** |
 
 ## Errors **(ours)**
@@ -30,6 +30,7 @@ Checked in this order; the first that applies wins.
 | `id` or `speakerId` not an integer | 400 |
 | Talk doesn't exist | 404 |
 | Speaker doesn't exist | 404 |
+| `DELETE` of a speaker who isn't a co-speaker of the talk (R11) | 404 |
 | `PUT` with the main speaker (R5) | 409 |
 | `PUT` of a new co-speaker when the talk has two (R4) | 409 |
 

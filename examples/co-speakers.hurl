@@ -79,6 +79,10 @@ HTTP 200
 jsonpath "$.coSpeakerIds" count == 1
 jsonpath "$.coSpeakerIds[0]" == {{co1_id}}
 
+# R11: removing the same one again is not found
+DELETE {{base_url}}/talks/{{talk_id}}/co-speakers/{{co2_id}}
+HTTP 404
+
 # R6: GET shows the same
 GET {{base_url}}/talks/{{talk_id}}
 HTTP 200

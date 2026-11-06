@@ -57,14 +57,16 @@ public class CoSpeakerService {
         return conferenceService.getTalk(talkId);
     }
 
-    /** Removes the speaker from the talk's co-speakers; removing someone who isn't one changes nothing. */
+    /** Removes the speaker from the talk's co-speakers; 404 if they aren't one. */
     @Transactional
     public TalkDto remove(long talkId, long speakerId) {
         if (!talkDao.exists(talkId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "talk not found");
         }
         requireSpeaker(speakerId);
-        coSpeakerDao.remove(talkId, speakerId);
+        if (!coSpeakerDao.remove(talkId, speakerId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "speaker is not a co-speaker of this talk");
+        }
         return conferenceService.getTalk(talkId);
     }
 
