@@ -43,7 +43,7 @@ public class CoSpeakerService {
         List<Long> current = coSpeakerDao.findSpeakerIds(talkId);
         switch (additionOutcome(talk.speakerId, current, speakerId)) {
             case MAIN_SPEAKER:
-                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "the main speaker can't be a co-speaker of their own talk");
             case FULL:
                 throw new ResponseStatusException(HttpStatus.CONFLICT,

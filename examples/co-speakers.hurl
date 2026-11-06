@@ -64,7 +64,7 @@ HTTP 409
 
 # R5: the main speaker can't co-speak their own talk
 PUT {{base_url}}/talks/{{talk_id}}/co-speakers/{{main_id}}
-HTTP 409
+HTTP 400
 
 # R8: a co-speaker's own talk list doesn't include the talk
 GET {{base_url}}/speakers/{{co1_id}}/talks
