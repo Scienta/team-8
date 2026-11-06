@@ -1,5 +1,6 @@
 package no.scienta.cfp;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,12 +41,13 @@ public class SpeakerDao {
 
     /**
      * The speaker's load: the number of talks still in the running ({@link TalkStatus#isInTheRunning()}) that they
-     * present, as main speaker or as co-speaker.
+     * present, as main speaker or as co-speaker. Finds their talks through the indexes on speaker, so it reads only
+     * their rows and not every talk.
      */
     public int load(long id) {
         return jdbc.queryForObject("SELECT COUNT(*) FROM talk t WHERE t.status NOT IN ('REJECTED', 'WITHDRAWN') "
-                        + "AND (t.speaker_id = ? OR EXISTS "
-                        + "(SELECT 1 FROM co_speaker c WHERE c.talk_id = t.id AND c.speaker_id = ?))",
+                        + "AND t.id IN (SELECT id FROM talk WHERE speaker_id = ? "
+                        + "UNION ALL SELECT talk_id FROM co_speaker WHERE speaker_id = ?)",
                 Integer.class, id, id);
     }
 
@@ -68,8 +70,28 @@ public class SpeakerDao {
         return jdbc.queryForObject("SELECT COUNT(*) FROM speaker", Integer.class);
     }
 
-    // Used by the old admin page to look people up.
+    /** The number of speakers who are the main speaker of at least one talk. */
+    public int countWithTalks() {
+        return jdbc.queryForObject(
+                "SELECT COUNT(DISTINCT t.speaker_id) FROM talk t JOIN speaker s ON s.id = t.speaker_id", Integer.class);
+    }
+
+    /** The names of the speakers who are the main speaker of at least one talk, by speaker id. */
+    public Map<Long, String> namesOfSpeakersWithTalks() {
+        Map<Long, String> names = new HashMap<>();
+        jdbc.query("SELECT s.id, s.name FROM speaker s WHERE EXISTS (SELECT 1 FROM talk t WHERE t.speaker_id = s.id)",
+                rs -> {
+                    names.put(rs.getLong("id"), rs.getString("name"));
+                });
+        return names;
+    }
+
+    /**
+     * The speakers whose name contains the text, whatever the case. Used by the old admin page to look people up. The
+     * text is a bound parameter, never part of the SQL.
+     */
     public List<Map<String, Object>> search(String name) {
-        return jdbc.queryForList("SELECT id, name, email, bio FROM speaker WHERE name ILIKE '%" + name + "%' ORDER BY name");
+        return jdbc.queryForList(
+                "SELECT id, name, email, bio FROM speaker WHERE name ILIKE '%' || ? || '%' ORDER BY name", name);
     }
 }

@@ -27,9 +27,9 @@ public class RatingDao {
     //     return jdbc.queryForObject("SELECT AVG(score) FROM rating WHERE talk_id = ?", Double.class, talkId);
     // }
 
-    /** The number of different reviewers who rated the talk. */
+    /** The number of different reviewers who rated the talk: one rating each, as the primary key makes sure. */
     public int reviewerCount(long talkId) {
-        Integer n = jdbc.queryForObject("SELECT COUNT(DISTINCT reviewer_id) FROM rating WHERE talk_id = ?",
+        Integer n = jdbc.queryForObject("SELECT COUNT(*) FROM rating WHERE talk_id = ?",
                 Integer.class, talkId);
         return n == null ? 0 : n;
     }

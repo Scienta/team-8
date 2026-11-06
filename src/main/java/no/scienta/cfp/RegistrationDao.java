@@ -27,17 +27,18 @@ public class RegistrationDao {
                 MAPPER, workshopId);
     }
 
-    public int count(long workshopId) {
-        Integer n = jdbc.queryForObject("SELECT COUNT(*) FROM registration WHERE workshop_id = ?", Integer.class,
-                workshopId);
-        return n == null ? 0 : n;
+    /**
+     * How many have registered for the workshop, and whether someone with this normalised email
+     * ({@link WorkshopRegistrationService#emailKey}) is one of them, in one round trip.
+     */
+    public Tally tally(long workshopId, String emailKey) {
+        return jdbc.queryForObject("SELECT COUNT(*) AS registrations, COALESCE(bool_or(email_key = ?), false) AS taken "
+                        + "FROM registration WHERE workshop_id = ?",
+                (rs, n) -> new Tally(rs.getInt("registrations"), rs.getBoolean("taken")), emailKey, workshopId);
     }
 
-    /** Whether someone with this normalised email ({@link WorkshopRegistrationService#emailKey}) is registered. */
-    public boolean isRegistered(long workshopId, String emailKey) {
-        Integer n = jdbc.queryForObject("SELECT COUNT(*) FROM registration WHERE workshop_id = ? AND email_key = ?",
-                Integer.class, workshopId, emailKey);
-        return n != null && n > 0;
+    /** A workshop's number of registrations and whether one email is among them. */
+    public record Tally(int registrations, boolean emailTaken) {
     }
 
     public Registration insert(long workshopId, String name, String email, String emailKey) {

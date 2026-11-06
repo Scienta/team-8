@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -211,6 +213,22 @@ class SpeakersTest {
     }
 
     @Test
+    void searchFindsANameWithAnApostrophe() throws Exception {
+        String name = "O'Brien" + UUID.randomUUID().toString().substring(0, 8);
+        assertEquals(201, register(name, uniqueEmail("obrien")).statusCode());
+
+        String found = expect(200, "GET", "/speakers/search?q=" + encoded(name), null);
+        assertTrue(found.contains("\"name\":\"" + name + "\""), found);
+    }
+
+    @Test
+    void searchTreatsTheQueryAsTextAndNotAsSql() throws Exception {
+        assertEquals(201, register("Ada Lovelace", uniqueEmail("ada")).statusCode());
+
+        assertEquals("[]", expect(200, "GET", "/speakers/search?q=" + encoded("' OR 'a'='a' OR name ILIKE '"), null));
+    }
+
+    @Test
     void searchWithoutAQueryIsABadRequest() throws Exception {
         expect(400, "GET", "/speakers/search", null);
     }
@@ -225,6 +243,10 @@ class SpeakersTest {
         HttpResponse<String> res = http.send(request(method, path, json), HttpResponse.BodyHandlers.ofString());
         assertEquals(status, res.statusCode(), method + " " + path + ": " + res.body());
         return res.body();
+    }
+
+    private static String encoded(String query) {
+        return URLEncoder.encode(query, StandardCharsets.UTF_8);
     }
 
     private static String uniqueEmail(String prefix) {

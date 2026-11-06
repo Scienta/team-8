@@ -105,6 +105,11 @@ public class ConferenceService {
         return getSpeaker(id);
     }
 
+    /** The names of the speakers who are the main speaker of a talk, by speaker id, in one query. */
+    public Map<Long, String> speakerNamesOfTalks() {
+        return speakerDao.namesOfSpeakersWithTalks();
+    }
+
     public List<Map<String, Object>> searchSpeakers(String q) {
         return speakerDao.search(q);
     }
@@ -218,7 +223,6 @@ public class ConferenceService {
         Map<String, Integer> byFormat = new LinkedHashMap<>();
         Map<String, Integer> byLevel = new LinkedHashMap<>();
         Map<String, Integer> byStatus = new LinkedHashMap<>();
-        List<Long> speakersWithTalks = new ArrayList<>();
         int minutes = 0;
         double ratingSum = 0;
         int rated = 0;
@@ -226,9 +230,6 @@ public class ConferenceService {
             byFormat.put(t.format, byFormat.getOrDefault(t.format, 0) + 1);
             byLevel.put(t.level, byLevel.getOrDefault(t.level, 0) + 1);
             byStatus.put(t.status, byStatus.getOrDefault(t.status, 0) + 1);
-            if (!speakersWithTalks.contains(t.speakerId) && speakerDao.findById(t.speakerId) != null) {
-                speakersWithTalks.add(t.speakerId);
-            }
             minutes += t.durationMinutes;
             if (t.averageRating != null) {
                 ratingSum += t.averageRating;
@@ -237,7 +238,7 @@ public class ConferenceService {
         }
         Map<String, Object> stats = new LinkedHashMap<>();
         stats.put("speakers", speakerDao.count());
-        stats.put("speakersWithTalks", speakersWithTalks.size());
+        stats.put("speakersWithTalks", speakerDao.countWithTalks());
         stats.put("talks", talks.size());
         stats.put("byFormat", byFormat);
         stats.put("byLevel", byLevel);
