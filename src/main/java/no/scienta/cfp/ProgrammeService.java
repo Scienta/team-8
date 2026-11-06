@@ -39,9 +39,10 @@ public class ProgrammeService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "talk " + talkId + " does not exist");
         }
         programmeDao.lockSlot(slot);
-        Long talkInPlace = programmeDao.findTalkId(room, slot);
+        ProgrammeDao.Placement placement = programmeDao.placement(room, slot, talkId);
+        Long talkInPlace = placement.talkInPlace();
         switch (schedulingOutcome(slot, talk.format, talk.status, Long.valueOf(talkId).equals(talkInPlace),
-                programmeDao.isScheduled(talkId), talkInPlace != null, programmeDao.hasSpeakerInSlot(talkId, slot))) {
+                placement.talkScheduled(), talkInPlace != null, placement.speakerBusy())) {
             case ALREADY_THERE:
                 return new ProgrammeEntry(room, slot, talkId);
             case DOES_NOT_FIT:

@@ -47,8 +47,8 @@ public class WorkshopRegistrationService {
             throw conflict("a " + workshop.format + " talk isn't a workshop and doesn't take registrations");
         }
         String emailKey = emailKey(email);
-        switch (registrationOutcome(workshop.status, registrationDao.isRegistered(workshopId, emailKey),
-                registrationDao.count(workshopId))) {
+        RegistrationDao.Tally tally = registrationDao.tally(workshopId, emailKey);
+        switch (registrationOutcome(workshop.status, tally.emailTaken(), tally.registrations())) {
             case NOT_ACCEPTED:
                 throw conflict("a " + workshop.status + " workshop doesn't take registrations");
             case ALREADY_REGISTERED:

@@ -30,27 +30,38 @@ public class ProgrammeDao {
         return ids.isEmpty() ? null : ids.get(0);
     }
 
-    public boolean isScheduled(long talkId) {
-        Integer n = jdbc.queryForObject("SELECT COUNT(*) FROM programme_entry WHERE talk_id = ?", Integer.class,
-                talkId);
-        return n != null && n > 0;
+    /**
+     * What scheduling the talk into the room and slot depends on, in one round trip: the talk in that place, whether
+     * the talk is on the programme anywhere, and whether a main speaker or co-speaker of the talk is a main speaker or
+     * co-speaker of a talk in this slot, in any room. The speaker check starts from the talk's own speakers and the few
+     * talks in the slot, so it reads neither every talk nor every co-speaker.
+     */
+    public Placement placement(Room room, Slot slot, long talkId) {
+        return jdbc.queryForObject(
+                "WITH candidate AS (SELECT speaker_id FROM talk WHERE id = ? "
+                        + "UNION ALL SELECT speaker_id FROM co_speaker WHERE talk_id = ?) "
+                        + "SELECT (SELECT talk_id FROM programme_entry WHERE room = ? AND slot = ?) AS talk_in_place, "
+                        + "EXISTS (SELECT 1 FROM programme_entry WHERE talk_id = ?) AS scheduled, "
+                        + "EXISTS (SELECT 1 FROM programme_entry e JOIN talk t ON t.id = e.talk_id "
+                        + "WHERE e.slot = ? AND (t.speaker_id IN (SELECT speaker_id FROM candidate) "
+                        + "OR EXISTS (SELECT 1 FROM co_speaker c WHERE c.talk_id = e.talk_id "
+                        + "AND c.speaker_id IN (SELECT speaker_id FROM candidate)))) AS speaker_busy",
+                (rs, n) -> {
+                    long talkInPlace = rs.getLong("talk_in_place");
+                    return new Placement(rs.wasNull() ? null : talkInPlace, rs.getBoolean("scheduled"),
+                            rs.getBoolean("speaker_busy"));
+                },
+                talkId, talkId, room.name(), slot.name(), talkId, slot.name());
     }
 
     /**
-     * Whether a main speaker or co-speaker of the talk is a main speaker or co-speaker of a talk in this slot, in
-     * any room. Starts from the talk's own speakers and the few talks in the slot, so it reads neither every talk nor
-     * every co-speaker.
+     * The programme as it bears on putting one talk in one room and slot.
+     *
+     * @param talkInPlace the talk in the room and slot, or null if it's free
+     * @param talkScheduled whether the talk is on the programme anywhere
+     * @param speakerBusy whether one of the talk's speakers speaks in the slot already, in any room
      */
-    public boolean hasSpeakerInSlot(long talkId, Slot slot) {
-        Boolean clash = jdbc.queryForObject(
-                "WITH candidate AS (SELECT speaker_id FROM talk WHERE id = ? "
-                        + "UNION ALL SELECT speaker_id FROM co_speaker WHERE talk_id = ?) "
-                        + "SELECT EXISTS (SELECT 1 FROM programme_entry e JOIN talk t ON t.id = e.talk_id "
-                        + "WHERE e.slot = ? AND (t.speaker_id IN (SELECT speaker_id FROM candidate) "
-                        + "OR EXISTS (SELECT 1 FROM co_speaker c WHERE c.talk_id = e.talk_id "
-                        + "AND c.speaker_id IN (SELECT speaker_id FROM candidate))))",
-                Boolean.class, talkId, talkId, slot.name());
-        return Boolean.TRUE.equals(clash);
+    public record Placement(Long talkInPlace, boolean talkScheduled, boolean speakerBusy) {
     }
 
     public void insert(Room room, Slot slot, long talkId) {
