@@ -16,15 +16,15 @@ POST /speakers {"name":"Ada Again","email":"ADA@Example.com"}
 
 POST /speakers {"name":"","email":"blank@example.com"}
   -> 400 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Validation failed for object='speakerForm'. Error count: 1","errors":[{"codes":["NotBlank.speakerForm.name","NotBlank.name","NotBlank.java.lang.String","NotBlank"],"arguments":[{"codes":["speakerForm.name","name"],"arguments":null,"defaultMessage":"name","code":"name"}],"defaultMessage":"must not be blank","objectName":"speakerForm","field":"name","rejectedValue":"","bindingFailure":false,"code":"NotBlank"}],"path":"/speakers"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Validation failed for object='speakerForm'. Error count: 1","errors":[{"objectName":"speakerForm","field":"name","rejectedValue":"","codes":["NotBlank.speakerForm.name","NotBlank.name","NotBlank.java.lang.String","NotBlank"],"arguments":[{"codes":["speakerForm.name","name"],"arguments":null,"defaultMessage":"name","code":"name"}],"defaultMessage":"must not be blank","bindingFailure":false,"code":"NotBlank"}],"path":"/speakers"}
 
 POST /speakers {"name":"   ","email":"spaces@example.com"}
   -> 400 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Validation failed for object='speakerForm'. Error count: 1","errors":[{"codes":["NotBlank.speakerForm.name","NotBlank.name","NotBlank.java.lang.String","NotBlank"],"arguments":[{"codes":["speakerForm.name","name"],"arguments":null,"defaultMessage":"name","code":"name"}],"defaultMessage":"must not be blank","objectName":"speakerForm","field":"name","rejectedValue":"   ","bindingFailure":false,"code":"NotBlank"}],"path":"/speakers"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Validation failed for object='speakerForm'. Error count: 1","errors":[{"objectName":"speakerForm","field":"name","rejectedValue":"   ","codes":["NotBlank.speakerForm.name","NotBlank.name","NotBlank.java.lang.String","NotBlank"],"arguments":[{"codes":["speakerForm.name","name"],"arguments":null,"defaultMessage":"name","code":"name"}],"defaultMessage":"must not be blank","bindingFailure":false,"code":"NotBlank"}],"path":"/speakers"}
 
 POST /speakers {"name":"No Email"}
   -> 400 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Validation failed for object='speakerForm'. Error count: 1","errors":[{"codes":["NotBlank.speakerForm.email","NotBlank.email","NotBlank.java.lang.String","NotBlank"],"arguments":[{"codes":["speakerForm.email","email"],"arguments":null,"defaultMessage":"email","code":"email"}],"defaultMessage":"must not be blank","objectName":"speakerForm","field":"email","rejectedValue":null,"bindingFailure":false,"code":"NotBlank"}],"path":"/speakers"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Validation failed for object='speakerForm'. Error count: 1","errors":[{"objectName":"speakerForm","field":"email","rejectedValue":null,"codes":["NotBlank.speakerForm.email","NotBlank.email","NotBlank.java.lang.String","NotBlank"],"arguments":[{"codes":["speakerForm.email","email"],"arguments":null,"defaultMessage":"email","code":"email"}],"defaultMessage":"must not be blank","bindingFailure":false,"code":"NotBlank"}],"path":"/speakers"}
 
 POST /speakers {"name":"Bad Email","email":"not-an-email"}
   -> 201 application/json;charset=UTF-8
@@ -32,7 +32,7 @@ POST /speakers {"name":"Bad Email","email":"not-an-email"}
 
 POST /speakers {"name":"Long Bio","email":"long@example.com","bio":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx…
   -> 400 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Validation failed for object='speakerForm'. Error count: 1","errors":[{"codes":["Size.speakerForm.bio","Size.bio","Size.java.lang.String","Size"],"arguments":[{"codes":["speakerForm.bio","bio"],"arguments":null,"defaultMessage":"bio","code":"bio"},500,0],"defaultMessage":"size must be between 0 and 500","objectName":"speakerForm","field":"bio","rejectedValue":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","bindingFailure":false,"code":"Size"}],"path":"/speakers"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Validation failed for object='speakerForm'. Error count: 1","errors":[{"objectName":"speakerForm","field":"bio","rejectedValue":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","codes":["Size.speakerForm.bio","Size.bio","Size.java.lang.String","Size"],"arguments":[{"codes":["speakerForm.bio","bio"],"arguments":null,"defaultMessage":"bio","code":"bio"},500,0],"defaultMessage":"size must be between 0 and 500","bindingFailure":false,"code":"Size"}],"path":"/speakers"}
 
 POST /speakers {"name":"Max Bio","email":"max@example.com","bio":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx…
   -> 201 application/json;charset=UTF-8
@@ -48,7 +48,7 @@ POST /speakers {"name":42,"email":"number@example.com"}
 
 POST /speakers not json
   -> 400 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"JSON parse error: Unrecognized token 'not': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false'); nested exception is com.fasterxml.jackson.core.JsonParseException: Unrecognized token 'not': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream); line: 1, column: 5]","path":"/speakers"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"JSON parse error: Unrecognized token 'not': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')","path":"/speakers"}
 
 POST /speakers 
   -> 400 application/json;charset=UTF-8
@@ -56,7 +56,7 @@ POST /speakers
 
 POST /speakers {"name":"Plain","email":"plain@example.com"}
   -> 415 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":415,"error":"Unsupported Media Type","message":"Content type 'text/plain;charset=UTF-8' not supported","path":"/speakers"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":415,"error":"Unsupported Media Type","message":"Content-Type 'text/plain;charset=UTF-8' is not supported.","path":"/speakers"}
 
 GET /speakers/1
   -> 200 application/json;charset=UTF-8
@@ -76,7 +76,7 @@ GET /speakers/999
 
 GET /speakers/abc
   -> 400 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; nested exception is java.lang.NumberFormatException: For input string: \"abc\"","path":"/speakers/abc"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"abc\"","path":"/speakers/abc"}
 
 GET /speakers/-1
   -> 404 application/json;charset=UTF-8
@@ -84,7 +84,7 @@ GET /speakers/-1
 
 GET /speakers
   -> 405 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":405,"error":"Method Not Allowed","message":"Request method 'GET' not supported","path":"/speakers"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":405,"error":"Method Not Allowed","message":"Method 'GET' is not supported.","path":"/speakers"}
 
 POST /talks {"title":"Characterise first","format":"WORKSHOP","level":"BEGINNER","speakerId":1}
   -> 201 application/json;charset=UTF-8
@@ -168,7 +168,7 @@ GET /talks/999
 
 GET /talks/abc
   -> 400 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; nested exception is java.lang.NumberFormatException: For input string: \"abc\"","path":"/talks/abc"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"abc\"","path":"/talks/abc"}
 
 GET /speakers/2/talks
   -> 200 application/json;charset=UTF-8
@@ -244,7 +244,7 @@ PUT /talks/3/ratings/8 {}
 
 PUT /talks/3/ratings/8 not json
   -> 400 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"JSON parse error: Unrecognized token 'not': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false'); nested exception is com.fasterxml.jackson.core.JsonParseException: Unrecognized token 'not': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream); line: 1, column: 5]","path":"/talks/3/ratings/8"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"JSON parse error: Unrecognized token 'not': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')","path":"/talks/3/ratings/8"}
 
 PUT /talks/3/ratings/8 {"score":4,"comment":"ok"}
   -> 200 application/json;charset=UTF-8
@@ -260,7 +260,7 @@ PUT /talks/3/ratings/-1 {"score":3}
 
 PUT /talks/3/ratings/abc {"score":3}
   -> 400 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; nested exception is java.lang.NumberFormatException: For input string: \"abc\"","path":"/talks/3/ratings/abc"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":400,"error":"Bad Request","message":"Method parameter 'reviewerId': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"abc\"","path":"/talks/3/ratings/abc"}
 
 PUT /talks/999/ratings/1 {"score":3}
   -> 404 application/json;charset=UTF-8
@@ -340,9 +340,9 @@ GET /health
 
 GET /no/such/path
   -> 404 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":404,"error":"Not Found","message":"No message available","path":"/no/such/path"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":404,"error":"Not Found","message":"No static resource no/such/path.","path":"/no/such/path"}
 
 DELETE /speakers/1
   -> 405 application/json;charset=UTF-8
-  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":405,"error":"Method Not Allowed","message":"Request method 'DELETE' not supported","path":"/speakers/1"}
+  {"timestamp":"9999-99-99T99:99:99.999+00:00","status":405,"error":"Method Not Allowed","message":"Method 'DELETE' is not supported.","path":"/speakers/1"}
 
