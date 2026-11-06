@@ -100,6 +100,10 @@ PUT {{base_url}}/programme/R4/S1
 { "talkId": {{talk_id}} }
 HTTP 404
 
+PUT {{base_url}}/programme/R2/slot2
+{ "talkId": "{{talk_id}}" }
+HTTP 404
+
 GET {{base_url}}/programme/R1/S6
 HTTP 404
 

@@ -31,9 +31,9 @@ public class ProgrammeService {
      */
     @Transactional
     public ProgrammeEntry schedule(String roomName, String slotName, Map<String, Object> body) {
-        long talkId = requiredTalkId(body);
         Room room = room(roomName);
         Slot slot = slot(slotName);
+        long talkId = requiredTalkId(body);
         TalkDto talk = talkDao.findByIdForUpdate(talkId);
         if (talk == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "talk " + talkId + " does not exist");

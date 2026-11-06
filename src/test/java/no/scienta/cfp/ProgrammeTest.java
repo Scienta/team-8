@@ -215,6 +215,13 @@ class ProgrammeTest {
     }
 
     @Test
+    void errors_aRoomOrSlotThatDoesntExistIsNotFoundBeforeTheBodyIsChecked() throws Exception {
+        String talk = acceptedTalk("PRESENTATION");
+        expect(404, "PUT", place("R2", "slot2"), "{\"talkId\":\"" + talk + "\"}");
+        expect(404, "PUT", place("R4", "S1"), "{}");
+    }
+
+    @Test
     void errors_aTalkThatDoesntExistIsABadRequest() throws Exception {
         schedule(400, "R1", "S1", "999999");
     }

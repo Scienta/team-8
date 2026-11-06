@@ -9,6 +9,8 @@ What the harness's checks told us about the choices a feature request leaves ope
   check-1, R11)
 - **A request that conflicts with the talk's current state is 409, as far as we know.** Our 409 for a third
   co-speaker hasn't failed a check, and the base app's 409 for the limit of 3 talks passes.
+- **A path that names nothing is 404, before the body is checked.** scheduling check-1 failed on `PUT
+  /programme/R2/slot2` with `{"talkId": "4573"}` while we answered 400 for the string `talkId`.
 - **A request that can never succeed is 400, not 409.** co-speakers check-2 failed on making the main speaker a
   co-speaker with 409 and has passed since we answer 400. We apply the same to a workshop outside the long slot
   (scheduling); confirm or correct that once its checks have run.
