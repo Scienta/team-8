@@ -67,3 +67,16 @@ CREATE TABLE IF NOT EXISTS registration (
     email_key   TEXT NOT NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ux_registration_email ON registration (workshop_id, email_key);
+
+-- 2026-11 programme: one talk per room and slot, each talk at most once. Rooms R1–R3 and slots S1–S5 are fixed, see
+-- Room and Slot. programme_slot has a row per slot for scheduling to lock, so the speaker check can't race.
+CREATE TABLE IF NOT EXISTS programme_slot (
+    slot TEXT PRIMARY KEY
+);
+INSERT INTO programme_slot (slot) VALUES ('S1'), ('S2'), ('S3'), ('S4'), ('S5') ON CONFLICT DO NOTHING;
+CREATE TABLE IF NOT EXISTS programme_entry (
+    room    TEXT NOT NULL,
+    slot    TEXT NOT NULL REFERENCES programme_slot (slot),
+    talk_id INTEGER NOT NULL UNIQUE REFERENCES talk (id),
+    PRIMARY KEY (room, slot)
+);
