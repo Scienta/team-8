@@ -22,8 +22,9 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 /**
- * Ratings ({@code ratings} base spec): one score per reviewer and talk, the average and count on every talk, and the
- * committee's ranking. Runs the real app on a random port with a throwaway database.
+ * Ratings ({@code ratings} base spec, with its average changed by {@code workflow/specs/ratings-cr.md}): one score per
+ * reviewer and talk, the average and count on every talk, and the committee's ranking. Runs the real app on a random
+ * port with a throwaway database.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class RatingsTest {
@@ -79,18 +80,44 @@ class RatingsTest {
     }
 
     @Test
-    void theAverageIsRoundedToOneDecimalWithHalvesUp() throws Exception {
+    void withFewerThanFiveRatingsEveryScoreCountsToTwoDecimals() throws Exception {
         String speaker = newSpeaker();
         String talk = newTalk(speaker);
-        rate(talk, 1, 4);
-        rate(talk, 2, 4);
-        rate(talk, 3, 4);
-        rate(talk, 4, 5);
+        rateAll(talk, 4, 4, 4, 5);
         String found = expect(200, "GET", "/talks/" + talk, null);
         assertTrue(found.contains("\"ratingCount\":4"), found);
-        assertTrue(found.contains("\"averageRating\":4.3"), found);
-        assertTrue(expect(200, "GET", "/speakers/" + speaker + "/talks", null).contains("\"averageRating\":4.3"));
-        assertTrue(expect(200, "GET", "/talks?speakerId=" + speaker, null).contains("\"averageRating\":4.3"));
+        assertTrue(found.contains("\"averageRating\":4.25"), found);
+        assertTrue(expect(200, "GET", "/speakers/" + speaker + "/talks", null).contains("\"averageRating\":4.25"));
+        assertTrue(expect(200, "GET", "/talks?speakerId=" + speaker, null).contains("\"averageRating\":4.25"));
+    }
+
+    @Test
+    void fromFiveRatingsExactlyOneLowestAndOneHighestAreLeftOutWhereverATalkIsShown() throws Exception {
+        String speaker = newSpeaker();
+        String talk = newTalk(speaker);
+        // without one 1 and one 5: 1, 5, 5 = 3.666..., shown as 3.67; every reviewer still counts
+        rateAll(talk, 1, 1, 5, 5, 5);
+        String found = expect(200, "GET", "/talks/" + talk, null);
+        assertTrue(found.contains("\"ratingCount\":5"), found);
+        assertTrue(found.contains("\"averageRating\":3.67"), found);
+        assertTrue(expect(200, "GET", "/speakers/" + speaker + "/talks", null).contains("\"averageRating\":3.67"));
+        assertTrue(expect(200, "GET", "/talks?speakerId=" + speaker, null).contains("\"averageRating\":3.67"));
+        assertTrue(expect(200, "GET", "/talks?sort=rating&speakerId=" + speaker, null)
+                .contains("\"averageRating\":3.67"));
+    }
+
+    @Test
+    void aTieAtTheThirdDecimalGoesToTheEvenNeighbour() throws Exception {
+        String down = newTalk(newSpeaker());
+        String up = newTalk(newSpeaker());
+        // without the 1 and one 5, 25 / 8 = 3.125 -> 3.12 and 27 / 8 = 3.375 -> 3.38
+        rateAll(down, 1, 5, 2, 3, 3, 3, 3, 3, 3, 5);
+        rateAll(up, 1, 5, 2, 3, 3, 3, 3, 3, 5, 5);
+        String found = expect(200, "GET", "/talks/" + down, null);
+        assertTrue(found.contains("\"averageRating\":3.12"), found);
+        assertTrue(found.contains("\"ratingCount\":10"), found);
+        found = expect(200, "GET", "/talks/" + up, null);
+        assertTrue(found.contains("\"averageRating\":3.38"), found);
     }
 
     @Test
@@ -181,19 +208,27 @@ class RatingsTest {
     }
 
     @Test
+    void theRankingUsesTheTrimmedAverage() throws Exception {
+        String speaker = newSpeaker();
+        String steady = newTalk(speaker);
+        String outlier = newTalk(speaker);
+        // steady: 4, 5, 5, 5 = 4.75; outlier: 1, 5, 5, 5, 5 was 4.2, and is 5.0 without the 1 and one 5
+        rateAll(steady, 4, 5, 5, 5);
+        rateAll(outlier, 1, 5, 5, 5, 5);
+        assertEquals(Arrays.asList(outlier, steady), ids(expect(200, "GET", "/talks?sort=rating&speakerId=" + speaker, null)));
+    }
+
+    @Test
     void theRankingUsesTheRoundedAverage() throws Exception {
         String speaker = newSpeaker();
         String older = newTalk(speaker);
         String newer = newTalk(speaker);
-        // older: 4, 4, 5 = 4.333..., shown as 4.3; newer: 4, 4, 4, 5 = 4.25, shown as 4.3 with one more reviewer
-        rate(older, 1, 4);
-        rate(older, 2, 4);
-        rate(older, 3, 5);
-        rate(newer, 1, 4);
-        rate(newer, 2, 4);
-        rate(newer, 3, 4);
-        rate(newer, 4, 5);
-        assertEquals(Arrays.asList(newer, older), ids(expect(200, "GET", "/talks?sort=rating&speakerId=" + speaker, null)));
+        // older: 21 / 8 = 2.625, shown as 2.62; newer: 34 / 13 = 2.615..., shown as 2.62 with more reviewers
+        rateAll(older, 1, 5, 2, 2, 2, 3, 3, 3, 3, 3);
+        rateAll(newer, 1, 5, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2);
+        String ranking = expect(200, "GET", "/talks?sort=rating&speakerId=" + speaker, null);
+        assertEquals(Arrays.asList(newer, older), ids(ranking));
+        assertEquals(2, ranking.split("\"averageRating\":2.62,", -1).length - 1, ranking);
     }
 
     // ---------------------------------------------------------------- helpers
@@ -210,6 +245,13 @@ class RatingsTest {
 
     private void rate(String talk, int reviewer, int score) throws Exception {
         expect(200, "PUT", "/talks/" + talk + "/ratings/" + reviewer, "{\"score\":" + score + "}");
+    }
+
+    /** Rates the talk with these scores, by reviewers 1, 2, 3 and so on. */
+    private void rateAll(String talk, int... scores) throws Exception {
+        for (int i = 0; i < scores.length; i++) {
+            rate(talk, i + 1, scores[i]);
+        }
     }
 
     private String expect(int status, String method, String path, String json) throws Exception {

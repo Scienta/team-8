@@ -23,8 +23,10 @@ public class RatingDao {
 
     /** What the talk's ratings add up to, read in one statement so they agree with each other. */
     public RatingSummary summary(long talkId) {
-        return jdbc.queryForObject("SELECT COUNT(*) AS cnt, COALESCE(SUM(score), 0) AS total FROM rating WHERE talk_id = ?",
-                (rs, row) -> new RatingSummary(rs.getInt("cnt"), rs.getLong("total")), talkId);
+        return jdbc.queryForObject("SELECT COUNT(*) AS cnt, COALESCE(SUM(score), 0) AS total, "
+                + "COALESCE(MIN(score), 0) AS lowest, COALESCE(MAX(score), 0) AS highest FROM rating WHERE talk_id = ?",
+                (rs, row) -> new RatingSummary(rs.getInt("cnt"), rs.getLong("total"), rs.getInt("lowest"),
+                        rs.getInt("highest")), talkId);
     }
 
     // public double average(long talkId) {
