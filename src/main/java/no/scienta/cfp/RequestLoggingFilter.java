@@ -20,7 +20,8 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 /**
  * Logs one line per HTTP request: method, path with query, status, duration, and the request and response bodies
  * (truncated). This is how we see what the harness's checks send and what we answer. {@code /health} is skipped, as
- * the platform polls it.
+ * the platform polls it, and so are the requests of {@link WarmUpBeforeTraffic}, which still go through the filter to
+ * warm it up.
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -45,8 +46,10 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             chain.doFilter(req, res);
         } finally {
             long millis = (System.nanoTime() - start) / 1_000_000;
-            log.info("{} {} -> {} ({} ms) req={} res={}", request.getMethod(), pathWithQuery(request),
-                    res.getStatus(), millis, body(req.getContentAsByteArray()), body(res.getContentAsByteArray()));
+            if (request.getHeader(WarmUpBeforeTraffic.HEADER) == null) {
+                log.info("{} {} -> {} ({} ms) req={} res={}", request.getMethod(), pathWithQuery(request),
+                        res.getStatus(), millis, body(req.getContentAsByteArray()), body(res.getContentAsByteArray()));
+            }
             res.copyBodyToResponse();
         }
     }
