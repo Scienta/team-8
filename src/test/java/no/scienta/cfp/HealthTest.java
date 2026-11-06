@@ -21,10 +21,12 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
- * The deploy contract's GET /health: 200 with the baked-in version while the database answers, 503 within 5 s
- * when it doesn't. The database here is a container of its own, so the test can pause it without hurting others.
+ * The deploy contract's GET /health: 200 with the baked-in version while the database answers, 503 within the timeout
+ * when it doesn't. The contract's timeout is 5 s; the test shortens it to 1 s so the paused-database cases don't take
+ * 20 s. The database here is a container of its own, so the test can pause it without hurting others.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "GIT_SHA=0123abc")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {"GIT_SHA=0123abc", "cfp.health.timeout=1s"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class HealthTest {
 
@@ -56,7 +58,7 @@ class HealthTest {
 
     @Test
     @Order(2)
-    void healthIsDbUnavailableWithinFiveSecondsWhenTheDatabaseHangs() throws Exception {
+    void healthIsDbUnavailableWithinTheTimeoutWhenTheDatabaseHangs() throws Exception {
         POSTGRES.getDockerClient().pauseContainerCmd(POSTGRES.getContainerId()).exec();
         try {
             long started = System.nanoTime();
@@ -64,7 +66,7 @@ class HealthTest {
             long took = Duration.ofNanos(System.nanoTime() - started).toMillis();
             assertEquals(503, res.statusCode(), res.body());
             assertEquals("{\"status\":\"db-unavailable\",\"version\":\"0123abc\"}", res.body());
-            assertTrue(took < 6000, "took " + took + " ms");
+            assertTrue(took < 2000, "took " + took + " ms");
         } finally {
             unpause();
         }

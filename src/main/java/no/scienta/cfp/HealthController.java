@@ -1,5 +1,6 @@
 package no.scienta.cfp;
 
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -15,7 +16,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 // The deploy pipeline polls /health, not /actuator/health.
-// 200 only if the database answers within 5 s, else 503. version is the GIT_SHA baked into the image.
+// 200 only if the database answers within 5 s (cfp.health.timeout), else 503. version is the GIT_SHA baked into the
+// image.
 // One probe at a time: while a SELECT 1 is still running, later requests wait on that same probe instead of
 // starting another, so a hung database can't pile up threads and pool connections.
 @RestController
@@ -29,19 +31,23 @@ public class HealthController {
 
     private final JdbcTemplate jdbc;
     private final String version;
+    private final Duration timeout;
     private CompletableFuture<Integer> probe;
 
-    public HealthController(JdbcTemplate jdbc, @Value("${GIT_SHA:dev}") String version) {
+    public HealthController(JdbcTemplate jdbc, @Value("${GIT_SHA:dev}") String version,
+                            @Value("${cfp.health.timeout:5s}") Duration timeout) {
         this.jdbc = new JdbcTemplate(jdbc.getDataSource());
-        this.jdbc.setQueryTimeout(5);
+        // The JDBC query timeout is in whole seconds; the wait in health() is the exact bound.
+        this.jdbc.setQueryTimeout((int) Math.max(1, timeout.toSeconds()));
         this.version = version;
+        this.timeout = timeout;
     }
 
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> health() {
         Map<String, String> body = new LinkedHashMap<>();
         try {
-            currentProbe().get(5, TimeUnit.SECONDS);
+            currentProbe().get(timeout.toMillis(), TimeUnit.MILLISECONDS);
             body.put("status", "ok");
             body.put("version", version);
             return ResponseEntity.ok(body);
