@@ -80,3 +80,6 @@ CREATE TABLE IF NOT EXISTS programme_entry (
     talk_id INTEGER NOT NULL UNIQUE REFERENCES talk (id),
     PRIMARY KEY (room, slot)
 );
+
+-- 2026-11 a speaker's load and the speaker clash in a slot look co-speakers up by speaker
+CREATE INDEX IF NOT EXISTS ix_co_speaker_speaker ON co_speaker (speaker_id);

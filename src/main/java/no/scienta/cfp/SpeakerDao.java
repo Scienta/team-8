@@ -40,12 +40,13 @@ public class SpeakerDao {
 
     /**
      * The speaker's load: the number of talks still in the running ({@link TalkStatus#isInTheRunning()}) that they
-     * present, as main speaker or as co-speaker.
+     * present, as main speaker or as co-speaker. Finds their talks through the indexes on speaker, so it reads only
+     * their rows and not every talk.
      */
     public int load(long id) {
         return jdbc.queryForObject("SELECT COUNT(*) FROM talk t WHERE t.status NOT IN ('REJECTED', 'WITHDRAWN') "
-                        + "AND (t.speaker_id = ? OR EXISTS "
-                        + "(SELECT 1 FROM co_speaker c WHERE c.talk_id = t.id AND c.speaker_id = ?))",
+                        + "AND t.id IN (SELECT id FROM talk WHERE speaker_id = ? "
+                        + "UNION ALL SELECT talk_id FROM co_speaker WHERE speaker_id = ?)",
                 Integer.class, id, id);
     }
 

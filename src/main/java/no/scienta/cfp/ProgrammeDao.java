@@ -38,17 +38,18 @@ public class ProgrammeDao {
 
     /**
      * Whether a main speaker or co-speaker of the talk is a main speaker or co-speaker of a talk in this slot, in
-     * any room.
+     * any room. Starts from the talk's own speakers and the few talks in the slot, so it reads neither every talk nor
+     * every co-speaker.
      */
     public boolean hasSpeakerInSlot(long talkId, Slot slot) {
         Boolean clash = jdbc.queryForObject(
-                "WITH people AS (SELECT id AS talk_id, speaker_id FROM talk "
-                        + "UNION SELECT talk_id, speaker_id FROM co_speaker) "
-                        + "SELECT EXISTS (SELECT 1 FROM programme_entry e "
-                        + "JOIN people scheduled ON scheduled.talk_id = e.talk_id "
-                        + "JOIN people candidate ON candidate.speaker_id = scheduled.speaker_id "
-                        + "WHERE e.slot = ? AND candidate.talk_id = ?)",
-                Boolean.class, slot.name(), talkId);
+                "WITH candidate AS (SELECT speaker_id FROM talk WHERE id = ? "
+                        + "UNION ALL SELECT speaker_id FROM co_speaker WHERE talk_id = ?) "
+                        + "SELECT EXISTS (SELECT 1 FROM programme_entry e JOIN talk t ON t.id = e.talk_id "
+                        + "WHERE e.slot = ? AND (t.speaker_id IN (SELECT speaker_id FROM candidate) "
+                        + "OR EXISTS (SELECT 1 FROM co_speaker c WHERE c.talk_id = e.talk_id "
+                        + "AND c.speaker_id IN (SELECT speaker_id FROM candidate))))",
+                Boolean.class, talkId, talkId, slot.name());
         return Boolean.TRUE.equals(clash);
     }
 
