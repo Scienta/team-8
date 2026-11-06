@@ -44,8 +44,7 @@ public class WorkshopRegistrationService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "workshop not found");
         }
         if (!WORKSHOP.equals(workshop.format)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "a " + workshop.format + " talk isn't a workshop and never takes registrations");
+            throw conflict("a " + workshop.format + " talk isn't a workshop and doesn't take registrations");
         }
         String emailKey = emailKey(email);
         switch (registrationOutcome(workshop.status, registrationDao.isRegistered(workshopId, emailKey),
