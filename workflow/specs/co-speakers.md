@@ -16,7 +16,7 @@ the team's, not the product owner's.
 | R6 | Every talk (in every response that returns talks) has `coSpeakerIds`: the ids in the order they were added, `[]` when there are none. | request |
 | R7 | Adding someone who is already a co-speaker changes nothing: 200, same order. This holds even when the talk already has two. | request |
 | R8 | `GET /speakers/{id}/talks` and `GET /talks?speakerId=` still list only talks where the speaker is the main speaker. | request |
-| R9 | Co-speaking doesn't count towards the limit of 3 talks, and a speaker at the limit can still co-speak. | request |
+| R9 | ~~Co-speaking doesn't count towards the limit of 3 talks.~~ Replaced by [submission-cap-cr](submission-cap-cr.md): co-speaking counts. | change request |
 | R10 | Removed and then re-added goes to the end of the order. | **(ours)** |
 | R11 | Removing someone who is a registered speaker but not a co-speaker of the talk (including removing the same one twice) changes nothing and answers 404. The harness rejected our first choice, 200 (idempotent like R7). | **(ours)** |
 | R12 | The limit of two holds under concurrent `PUT`s for the same talk: the talk row is locked (`SELECT … FOR UPDATE`) while adding. | **(ours)** |
