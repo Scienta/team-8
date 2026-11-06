@@ -30,9 +30,6 @@ public class AcceptanceService {
     public TalkDto decide(long talkId, Map<String, Object> body) {
         TalkStatus decision = decisionFrom(body);
         TalkStatus current = TalkStatus.valueOf(lockedTalk(talkId).status);
-        if (decision == current) {
-            return conferenceService.getTalk(talkId);
-        }
         if (!current.committeeMayMoveTo(decision)) {
             throw conflict("a " + current + " talk can't be " + decision);
         }

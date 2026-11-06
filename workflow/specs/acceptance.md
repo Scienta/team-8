@@ -28,7 +28,7 @@ speaker: SUBMITTED, WAITLISTED, ACCEPTED ──> WITHDRAWN (final)
 | R6 | A talk can be withdrawn unless it is `REJECTED` or `WITHDRAWN`; an `ACCEPTED` talk can be withdrawn. | request |
 | R7 | The current status shows wherever a talk is shown (`status` on every talk). | request |
 | R8 | A decision or withdrawal that isn't allowed changes nothing. | request |
-| R9 | A decision equal to the current status changes nothing and answers 200 with the talk (e.g. `WAITLISTED` again, or `ACCEPTED` again, which needs no new ratings check). | **(ours)** |
+| R9 | A decision equal to the current status (e.g. `WAITLISTED` again, or `ACCEPTED` again) isn't a move the state machine allows: 409, nothing changes. We first chose 200 (idempotent), but the harness rejected that kind of choice on co-speakers (R11 there): idempotency only where the request says so. | **(ours)** |
 | R10 | Concurrent decisions and withdrawals on one talk are serialised by locking the talk row (`SELECT … FOR UPDATE`), so the outcome is always reachable by applying the requests one at a time. | request, **(ours)** for how |
 
 ## Errors **(ours)**

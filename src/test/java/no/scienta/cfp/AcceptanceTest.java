@@ -89,12 +89,16 @@ class AcceptanceTest {
     }
 
     @Test
-    void r9_aDecisionEqualToTheCurrentStatusChangesNothing() throws Exception {
-        String talk = newTalk(newSpeaker());
+    void r9_aDecisionEqualToTheCurrentStatusIsAConflict() throws Exception {
+        String talk = ratedTalk(newSpeaker(), 2);
         decide(200, talk, "WAITLISTED");
-        assertEquals("WAITLISTED", status(decide(200, talk, "WAITLISTED")));
-        decide(200, talk, "REJECTED");
-        assertEquals("REJECTED", status(decide(200, talk, "REJECTED")));
+        decide(409, talk, "WAITLISTED");
+        decide(200, talk, "ACCEPTED");
+        decide(409, talk, "ACCEPTED");
+        assertEquals("ACCEPTED", status(expect(200, "GET", "/talks/" + talk, null)));
+        String rejected = newTalk(newSpeaker());
+        decide(200, rejected, "REJECTED");
+        decide(409, rejected, "REJECTED");
     }
 
     @Test

@@ -13,8 +13,11 @@ public enum TalkStatus {
     /** The statuses a committee decision may set. */
     static final Set<TalkStatus> DECISIONS = EnumSet.of(ACCEPTED, REJECTED, WAITLISTED);
 
-    /** Whether the committee may move a talk from this status to {@code decision}, a different status. */
+    /** Whether the committee may move a talk from this status to {@code decision}; never to the status it has. */
     boolean committeeMayMoveTo(TalkStatus decision) {
+        if (decision == this) {
+            return false;
+        }
         switch (this) {
             case SUBMITTED:
                 return DECISIONS.contains(decision);

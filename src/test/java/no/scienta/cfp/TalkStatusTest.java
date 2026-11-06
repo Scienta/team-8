@@ -40,7 +40,7 @@ class TalkStatusTest {
     private static Set<TalkStatus> committeeTargets(TalkStatus from) {
         Set<TalkStatus> targets = EnumSet.noneOf(TalkStatus.class);
         for (TalkStatus to : TalkStatus.values()) {
-            if (to != from && from.committeeMayMoveTo(to)) {
+            if (from.committeeMayMoveTo(to)) {
                 targets.add(to);
             }
         }

@@ -43,12 +43,10 @@ HTTP 200
 jsonpath "$.id" == {{talk_id}}
 jsonpath "$.status" == "WAITLISTED"
 
-# R9: the same decision again changes nothing
+# R9: the same decision again is a conflict
 PUT {{base_url}}/talks/{{talk_id}}/status
 { "status": "WAITLISTED" }
-HTTP 200
-[Asserts]
-jsonpath "$.status" == "WAITLISTED"
+HTTP 409
 
 # R4, R2: a second reviewer, then accept
 PUT {{base_url}}/talks/{{talk_id}}/ratings/102
