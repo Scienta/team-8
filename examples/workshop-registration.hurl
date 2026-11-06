@@ -78,7 +78,7 @@ HTTP 400
 # R4: a talk that isn't a workshop, and a talk that doesn't exist
 POST {{base_url}}/workshops/{{talk_id}}/registrations
 { "name": "Ada Lovelace", "email": "ada@example.com" }
-HTTP 404
+HTTP 400
 
 GET {{base_url}}/workshops/999999999/registrations
 HTTP 404

@@ -39,7 +39,14 @@ public class WorkshopRegistrationService {
         if (!Utils.isValidEmail(email.trim())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email is not an email address");
         }
-        TalkDto workshop = requireWorkshop(talkDao.findByIdForUpdate(workshopId));
+        TalkDto workshop = talkDao.findByIdForUpdate(workshopId);
+        if (workshop == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "workshop not found");
+        }
+        if (!WORKSHOP.equals(workshop.format)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "a " + workshop.format + " talk isn't a workshop and never takes registrations");
+        }
         String emailKey = emailKey(email);
         switch (registrationOutcome(workshop.status, registrationDao.isRegistered(workshopId, emailKey),
                 registrationDao.count(workshopId))) {
