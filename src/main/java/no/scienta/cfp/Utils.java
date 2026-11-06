@@ -48,10 +48,11 @@ public class Utils {
     }
 
     /**
-     * "11/4/26, 1:05 PM", what the reviewer UI shows.
+     * "11/4/26, 1:05 PM", what the reviewer UI shows. The pattern is spelled out because the JDK's own US short format
+     * puts a narrow no-break space before AM/PM from Java 20 on, and the reviewer UI needs an ordinary space.
      */
     public static String usShort(Date d) {
-        DateFormat f = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.US);
+        DateFormat f = new SimpleDateFormat("M/d/yy, h:mm a", Locale.US);
         f.setTimeZone(UTC);
         return f.format(d);
     }

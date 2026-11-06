@@ -41,6 +41,15 @@ class UtilsTest {
         assertEquals(4.5, Utils.roundRating(4.5));
     }
 
+    @Test
+    void usShortIsTheReviewerUiFormatWithAnOrdinarySpaceOnAnyJava() throws Exception {
+        SimpleDateFormat utc = new SimpleDateFormat(Utils.DB_DATE_TIME);
+        utc.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("11/4/26, 1:05 PM", Utils.usShort(utc.parse("2026-11-04 13:05:59")));
+        assertEquals("11/4/26, 12:00 AM", Utils.usShort(utc.parse("2026-11-04 00:00:00")));
+        assertEquals("1/15/27, 11:59 AM", Utils.usShort(utc.parse("2027-01-15 11:59:00")));
+    }
+
     @Disabled("flaky on Jenkins")
     @Test
     void nowIsCurrentTime() {
