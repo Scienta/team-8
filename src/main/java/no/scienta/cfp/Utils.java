@@ -1,6 +1,9 @@
 package no.scienta.cfp;
 
 import java.text.DateFormat;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -38,13 +41,22 @@ public class Utils {
         }
     }
 
+    private static final DateTimeFormatter REPORTING_TIMESTAMP =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSxxx").withZone(ZoneOffset.UTC);
+    private static final DateTimeFormatter REPORTING_DATE =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneOffset.UTC);
+
     /**
-     * Epoch millis to a date-only java.sql.Date (UTC day).
+     * Epoch millis as the legacy reporting tools read {@code submittedAt}: UTC, always with milliseconds, and the
+     * offset always written {@code +00:00}, never {@code Z}. For example {@code 2026-11-04T12:30:05.123+00:00}.
      */
-    public static java.sql.Date toSqlDate(long millis) {
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-        f.setTimeZone(UTC);
-        return java.sql.Date.valueOf(f.format(new Date(millis)));
+    public static String reportingTimestamp(long millis) {
+        return REPORTING_TIMESTAMP.format(Instant.ofEpochMilli(millis));
+    }
+
+    /** Epoch millis as the UTC day, {@code yyyy-MM-dd}, as the legacy reporting tools read {@code submittedOn}. */
+    public static String reportingDate(long millis) {
+        return REPORTING_DATE.format(Instant.ofEpochMilli(millis));
     }
 
     /**
