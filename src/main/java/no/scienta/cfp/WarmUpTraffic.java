@@ -4,8 +4,9 @@ import java.util.List;
 
 /**
  * The requests that warm the app up before it takes traffic: one for each endpoint the harness calls, aimed at ids
- * that don't exist or with bodies that are refused, so that every request goes through routing, JSON, validation and
- * the database but none of them writes anything. {@code WarmUpTest} checks that they leave the database as it was.
+ * that don't exist, with bodies that are refused or only reading, so that every request goes through routing, JSON,
+ * validation and the database but none of them writes anything. {@code WarmUpTest} checks that they leave the
+ * database as it was.
  */
 final class WarmUpTraffic {
 
@@ -31,7 +32,9 @@ final class WarmUpTraffic {
             new WarmUpRequest("DELETE", "/talks/0/co-speakers/0", null),
             new WarmUpRequest("POST", "/workshops/0/registrations",
                     "{\"name\":\"Warm-up\",\"email\":\"warm-up@example.test\"}"),
-            new WarmUpRequest("GET", "/workshops/0/registrations", null));
+            new WarmUpRequest("GET", "/workshops/0/registrations", null),
+            new WarmUpRequest("GET", "/programme", null),
+            new WarmUpRequest("GET", "/programme.csv", null));
 
     private WarmUpTraffic() {
     }
