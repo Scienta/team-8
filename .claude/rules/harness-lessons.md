@@ -1,0 +1,13 @@
+# Lessons from the harness
+
+What the harness's checks told us about the choices a feature request leaves open. Apply these when writing a spec in
+`workflow/specs/`, and add a line whenever a check fails on one of our own decisions.
+
+- **Idempotent only where the feature request says so.** If it says "adding someone who is already X changes
+  nothing", that call is a 200. Anything else that changes nothing because there is nothing to change is a refusal: a
+  `DELETE` of something that isn't there is 404, a move to the state a thing is already in is 409. (co-speakers
+  check-1, R11)
+- **A request that conflicts with the talk's current state is 409, as far as we know.** Our 409 for a third
+  co-speaker hasn't failed a check, and the base app's 409 for the limit of 3 talks passes.
+- **Making the main speaker a co-speaker is not 409.** co-speakers check-2 fails on that `PUT` with 409; the expected
+  code is still unknown. Update this line when we know.
