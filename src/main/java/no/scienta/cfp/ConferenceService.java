@@ -41,13 +41,15 @@ public class ConferenceService {
     private final SpeakerDao speakerDao;
     private final TalkDao talkDao;
     private final RatingDao ratingDao;
+    private final CoSpeakerDao coSpeakerDao;
     private final NotificationService notifications;
 
     public ConferenceService(SpeakerDao speakerDao, TalkDao talkDao, RatingDao ratingDao,
-                             NotificationService notifications) {
+                             CoSpeakerDao coSpeakerDao, NotificationService notifications) {
         this.speakerDao = speakerDao;
         this.talkDao = talkDao;
         this.ratingDao = ratingDao;
+        this.coSpeakerDao = coSpeakerDao;
         this.notifications = notifications;
     }
 
@@ -162,7 +164,7 @@ public class ConferenceService {
         if (talk == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "talk not found");
         }
-        addRatings(talk);
+        addDetails(talk);
         return talk;
     }
 
@@ -172,7 +174,7 @@ public class ConferenceService {
         }
         List<TalkDto> talks = talkDao.findBySpeaker(speakerId);
         for (TalkDto t : talks) {
-            addRatings(t);
+            addDetails(t);
         }
         return talks;
     }
@@ -183,7 +185,7 @@ public class ConferenceService {
         }
         List<TalkDto> talks = speakerId == null ? talkDao.findAll() : talkDao.findBySpeaker(speakerId);
         for (TalkDto t : talks) {
-            addRatings(t);
+            addDetails(t);
         }
         if ("rating".equals(sort)) {
             List<TalkDto> rated = new ArrayList<>();
@@ -210,6 +212,12 @@ public class ConferenceService {
             return rated;
         }
         return talks;
+    }
+
+    /** Fills in what a talk shows besides its own row: its ratings and its co-speakers. */
+    private void addDetails(TalkDto talk) {
+        addRatings(talk);
+        talk.coSpeakerIds = coSpeakerDao.findSpeakerIds(talk.id);
     }
 
     private void addRatings(TalkDto talk) {
