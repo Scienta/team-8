@@ -39,6 +39,12 @@ public class TalkDao {
         return list.isEmpty() ? null : list.get(0);
     }
 
+    /** Finds the talk and locks its row until the transaction ends. */
+    public TalkDto findByIdForUpdate(long id) {
+        List<TalkDto> list = jdbc.query("SELECT " + COLUMNS + " FROM talk WHERE id = ? FOR UPDATE", mapper, id);
+        return list.isEmpty() ? null : list.get(0);
+    }
+
     public List<TalkDto> findBySpeaker(long speakerId) {
         return jdbc.query("SELECT " + COLUMNS + " FROM talk WHERE speaker_id = ? ORDER BY id", mapper, speakerId);
     }
